@@ -1,8 +1,9 @@
 # 목차
-#### 1. [자바 시작하기](#1-자바-시작하기)
-#### 2. [변수와 타입](#2-변수와-타입)
-#### 3. [연산자](#3-연산자)
-#### 4. [조건문과 반복문](#4-조건문과-반복문)
+##### 1. [자바 시작하기](#1-자바-시작하기)
+##### 2. [변수와 타입](#2-변수와-타입)
+##### 3. [연산자](#3-연산자)
+##### 4. [조건문과 반복문](#4-조건문과-반복문)
+##### 5. [참조 타입](#5-참조-타입)
 
 ---
 
@@ -247,3 +248,187 @@ All: for (;;) {
 ```
 
 ---
+
+# 5. 참조 타입
+
+## 1. 데이터 타입 분류
+- 자바의 데이터 타입
+  - 기본 타입(primitive type) : 정수, 실수, 문자, 논리 리터럴을 저장하는 타입
+  - 참조 타입(reference type) : 객체(Object)의 번지를 참조하는 타입(배열, 열거, 클래스, 인터페이스 등)
+
+## 2. 메모리 사용 영역
+- JVM이 시작되면 JVM은 운영체제에서 할당받은 메모리 영역(Runtime Data Area)을 다음과 같이 세부영역으로 구분해서 사용함
+- 추후 다시 읽어봐야 할 글
+  - [Full explanation of JVM – Runtime Data Area and How JVM using it](https://blog.knoldus.com/full-explanation-of-jvm-runtime-data-area-and-how-jvm-using-it/)
+  - [자바 메모리 구조(Runtime Data Area)](https://jithub.tistory.com/40)
+![runtime data area](img/ThisisJava/5_runtime_data_area.png)
+
+### 메소드 영역
+- 코드에서 사용되는 클래스(~.class)들을 클래스 로더로 읽어 클래스별로 runtime contant pool, field data, method data, method 코드, constructor 코드 등을 분류해서 저장함
+- Class Loader가 적재한 클래스(또는 인터페이스)에 대한 메타데이터 정보가 저장됨
+- JVM이 시작할 때 생성되고 **모든 스레드가 공유**하는 영역
+
+### 힙(Heap) 영역
+- 객체와 배열이 **동적**으로 생성되는 영역
+  - 이를 JVM 스택 영역의 변수나 다른 객체의 필드에서 참조함
+- 참조하는 변수나 필드가 없다면 의미 없는 객체(쓰레기)로 취급하고 JVM의 GC(Garbage Collector)를 실행시켜 쓰레기 객체를 힙 영역에서 자동으로 제거함
+- 개발자는 객체 제거를 위해 별도의 코드를 작성할 필요가 없고 오히려 부작용만 낳을 가능성이 큼
+- 모든 Thread가 공유하기 때문에 동기화 문제가 발생할 수 있음
+
+### JVM 스택(Stack) 영역
+- 각 스레드마다 하나씩 존재하며 스레드가 시작될 때 할당됨
+- 기본적으로 main 스레드 하나만 존재하며 JVM 스택도 하나임
+- 메소드를 호출할 때마다 프레임(Frame)을 추가(push)하고 메소드가 종료되면 해당 프레임을 제거(pop)함
+- printStackTrace()에서 Stack Trace의 각 라인은 하나의 프레임을 표현함
+- 로컬 변수 스택
+  - 프레임 내부에 있음
+  - 초기화될 때 변수가 이 영역에 생성됨
+  - 변수는 선언된 블록 안에서만 스택이 존재하고 블록을 벗어나면 스택에서 제거됨
+
+## 3. 참조 변수의 ==, != 연산
+- 동일한 객체를 참조하는지, 다른 객체를 참조하는지 알아볼 때 사용됨
+- 참조 타입 변수의 값은 힙 영역의 객체 주소이므로 결국 주소 값을 비교한느 것임
+
+## 4. null과 NullPointerException
+- 참조 타입 변수는 힙 영역의 객체를 참조하지 않는다는 뜻으로 null 값을 가질 수 있음
+- null로 초기화된 참조 변수는 스택 영역에 저장됨
+- NullPointerException : 참조 타입 변수를 잘못 사용하면 발생함
+
+
+## 5. String 타입
+- 큰 따옴표로 감싼 문자열 리터럴을 대입하여 저장 가능
+```java
+String s;
+s = "test";
+String s2 = "second";
+```
+- new 연산자
+  - 힙 영역에 새로운 객체를 만들 때 사용
+  - 객체 생성 연산자라고도 함
+```java
+String s1 = "TEST";
+String s2 = "TEST";
+/* 
+s1 == s2 -> true
+s1.equals(s2) -> true
+
+자바에서는 문자열 리터럴이 동일하다면 String 객체를 공유하도록 되어있음
+*/ 
+
+String s3 = new String("TEST");
+String s4 = new String("TEST");
+/*
+s3 == s4 -> false
+s3.equals(s4) -> true
+
+문자열이 동일하더라도 new를 사용하여 String 객체를 생성했기 때문에 서로 다른 객체를 참조함
+문자열의 값은 같기 때문에 equals() 메소드의 결과값은 true임
+*/
+```
+
+## 6. 배열 타입
+- 같은 타입의 데이터를 연속된 공간에 나열시키고, 각 데이터에 인덱스(index)를 부여해놓은 자료구조임
+- 같은 타입의 데이터만 저장할 수 있음
+- 선언과 동시에 저장할 수 있는 데이터 타입이 결정됨
+- 다른 데이터 타입의 값을 저장하려고 하면 타입 불일치(Type mismatch) 컴파일 오류 발생
+
+### 배열 선언
+- 대괄호 []를 타입 또는 변수 뒤에 붙임
+- null 값으로 초기화할 수 있음
+- 배열 변수를 이미 선언한 후에 다른 실행문에서 중괄호를 사용한 배열 생성은 허용되지 않음
+  - new 연산자를 사용해서 할당해주는건 가능
+- new 연산자를 사용하여 배열을 생성할 경우, 배열은 자동적으로 기본값으로 초기화됨
+  - 배열의 데이터 타입에 따라 0, 0.0f, false, null 등으로 초기화됨
+```java
+// 배열 선언
+int[] intArray;
+double[] doubleArray;
+String[] strArray;
+
+int intArray[];
+double doubleArray[];
+String strArray[];
+
+// 배열 생성
+String[] names = {"Alice", "Brown", "Charile"};
+
+String[] names = null;
+names = {"Alice", "Brown", "Charile"};                  // 컴파일 에러 발생!!
+naems = new String[] {"Alice", "Brown", "Charile"};     // 정상 동작
+
+int[] scores = new int[3];    // 기본값인 0으로 초기화
+// 배열 생성 후 값을 저장하기 위해서 대입 연산자 사용
+scores[0] = 84;
+scores[1] = 91;
+scores[2] = 76;
+```
+- 배열 길이
+  - length 필드 사용
+  - length 필드는 읽기 전용이기 때문에 바꿀 수 없음
+  - for문에서 유용하게 사용
+- #### 다차원 배열
+  - 값들이 행과 열로서 구성된 배열을 2차원 배열이라고 함
+![2d_array](img/ThisisJava/5_2d_array.png)
+  - 배열 변수인 arr2는 길이가 2인 배열을 참조함(0x10)
+  - arr2[0]은 arr2[0][0]을 참조함
+  - arr2[1]은 arr2[1][0]을 참조함
+- #### 배열 복사
+  - 한 번 생성된 배열은 길이를 늘리거나 줄일 수 없음
+  - 만약 길이를 변경하고 싶다면 새로운 배열을 생성하고, 기존 배열 항목을 복사해야 됨
+  - 얕은 복사(shallow copy)
+    - 새 배열에 이전 배열의 객체 주소를 복사
+    - 기존 배열의 값을 수정하면 새 배열에도 영향을 끼침
+  - 깊은 복사(deep copy)
+    - 참조하는 객체를 별도로 생성
+  - [자바 배열 복사 메소드 참고](https://coding-factory.tistory.com/548)
+- #### 향상된 for문
+```java
+int[] scores = {95, 71, 84, 93, 87};
+
+for (int score: scores) {
+    // do something
+}
+```
+
+## 7. 열거 타입(enumeration type)
+- 한정된 값만을 가지는 데이터 타입
+- 몇 개의 열거 상수(enumeration constant) 중에서 하나의 상수를 저장하는 데이터 타입
+- 네이밍
+  - 열거 타입 이름은 관례적으로 pascal case를 사용함
+  - 열거 타입 이름과 소스 파일명은 대소문자 모두 동일해야함
+  - 관례적으로 열거 상수는 모두 대문자로 작성하고, 여러 단어일 경우 단어 사이를 언더바(_)로 연결함
+
+
+
+```java
+// Week.java
+
+public enum Week {      // Week -> 열거 타입 이름
+    /* 열거 상수 */
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY
+}
+```
+
+```java
+// test.java
+
+/* 
+- 열거 타입 변수 today에 열거 상수 대입
+- 열거 상수는 단독으로 사용 못하고 열거타입.열거상수로 사용 가능
+- 열거 상수는 열거 객체로 생성되기 때문에 Heap 영역에 있음
+
+- 여기서는 열거 타입 Week가 총 7개의 Week 객체로 생성되고, 
+  메소드 영역에 생성된 열거 상수가 Week 객체를 각각 참조함
+- 열거 타입 변수 today는 stack 영역에 생성됨
+*/
+Week today = Week.SUNDAY;       
+
+today == Week.SUNDAY;       // true, 동일한 Week 객체를 참조하기 때문
+
+```
