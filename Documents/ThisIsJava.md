@@ -261,6 +261,7 @@ All: for (;;) {
 - 추후 다시 읽어봐야 할 글
   - [Full explanation of JVM – Runtime Data Area and How JVM using it](https://blog.knoldus.com/full-explanation-of-jvm-runtime-data-area-and-how-jvm-using-it/)
   - [자바 메모리 구조(Runtime Data Area)](https://jithub.tistory.com/40)
+
 ![runtime data area](./img/ThisIsJava/5_runtime_data_area.png)
 
 ### 메소드 영역
