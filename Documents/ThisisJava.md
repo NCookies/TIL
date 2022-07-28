@@ -261,7 +261,7 @@ All: for (;;) {
 - 추후 다시 읽어봐야 할 글
   - [Full explanation of JVM – Runtime Data Area and How JVM using it](https://blog.knoldus.com/full-explanation-of-jvm-runtime-data-area-and-how-jvm-using-it/)
   - [자바 메모리 구조(Runtime Data Area)](https://jithub.tistory.com/40)
-![runtime data area](img/ThisisJava/5_runtime_data_area.png)
+![runtime data area](./img/ThisisJava/5_runtime_data_area.png)
 
 ### 메소드 영역
 - 코드에서 사용되는 클래스(~.class)들을 클래스 로더로 읽어 클래스별로 runtime contant pool, field data, method data, method 코드, constructor 코드 등을 분류해서 저장함
@@ -368,7 +368,7 @@ scores[2] = 76;
   - for문에서 유용하게 사용
 - #### 다차원 배열
   - 값들이 행과 열로서 구성된 배열을 2차원 배열이라고 함
-![2d_array](img/ThisisJava/5_2d_array.png)
+![2d_array](./img/ThisisJava/5_2d_array.png)
   - 배열 변수인 arr2는 길이가 2인 배열을 참조함(0x10)
   - arr2[0]은 arr2[0][0]을 참조함
   - arr2[1]은 arr2[1][0]을 참조함
