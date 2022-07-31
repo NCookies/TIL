@@ -87,6 +87,10 @@ public class BankApplication {
         }
 
         for (int i = 0; i < accountNum; i++) {
+            if (accountArray[i] == null) {
+                break;
+            }
+
             System.out.println("------------------------");
             System.out.println("계좌목록");
             System.out.println("------------------------");
@@ -160,6 +164,9 @@ public class BankApplication {
         }
 
         for (int i = 0; i < accountNum; i++) {
+            if (accountArray[i] == null) {
+                break;
+            }
             if (no.equals(accountArray[i].getAno())) {
                 return accountArray[i];
             }
