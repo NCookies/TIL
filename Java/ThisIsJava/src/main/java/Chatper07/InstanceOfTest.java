@@ -1,4 +1,4 @@
-package Chatper7;
+package Chatper07;
 
 class Parent{
 
