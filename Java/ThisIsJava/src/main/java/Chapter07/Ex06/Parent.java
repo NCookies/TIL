@@ -1,4 +1,4 @@
-package Chatper07.Ex06;
+package Chapter07.Ex06;
 
 public class Parent {
     public String nation;

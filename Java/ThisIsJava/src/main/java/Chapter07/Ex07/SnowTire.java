@@ -1,4 +1,4 @@
-package Chatper07.Ex07;
+package Chapter07.Ex07;
 
 public class SnowTire extends Tire {
     @Override

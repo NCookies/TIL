@@ -1,4 +1,4 @@
-package Chatper07.Ex07;
+package Chapter07.Ex07;
 
 public class SnowTireExample {
     public static void main(String[] args) {

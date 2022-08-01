@@ -1,4 +1,4 @@
-package Chatper07;
+package Chapter07;
 
 class Parent{
 
