@@ -8,6 +8,7 @@
 ##### [7. 상속](#7-상속)
 ##### [8. 인터페이스](#8-인터페이스)
 ##### [9. 중첩 클래스와 중첩 인터페이스](#9-중첩-클래스와-중첩-인터페이스)
+##### [10. 예외 처리](#10-예외-처리)
 
 ---
 
@@ -1527,3 +1528,259 @@ public class Main {
 - 9.3.3 로컬 클래스에서 설명했던 동일한 문제와 해결 방법을 가지고 있음
 - 로컬 클래스와 익명 클래스는 클래스 이름의 존재 여부만 다를 뿐 동작 방식은 동일함
 - 익명 객체에서 사용된 매개 변수와 로컬 변수는 모두 **final 특성**을 가지고 있음
+
+---
+
+# 10. 예외 처리
+
+## 10.1 예외와 에외 클래스
+- #### 에러(error)
+  - 컴퓨터 하드웨어의 오동작 또는 고장으로 인해 응용 프로그램 실행 오류가 발생하는 것
+  - JVM 실행에 문제가 생긴 것이기 때문에 개발자는 대처할 방법이 전혀 없음
+- #### 예외(exception)
+  - 사용자의 잘못된 조작 또는 개발자의 잘못된 코딩으로 인해 발생하는 프로그램 오류
+  - 예외 처리(Exception Handling)을 통해 프로그램을 종료하지 않고 정상 실행 상태가 유지되도록 함
+  - **일반 예외(Exception)**
+    - 컴파일하는 과정에서 예외 처리 코드가 필요한지 검사하여 컴파일러 체크 예외라고도 함
+    - 예외 처리 코드가 없다면 컴파일 오류가 발생함
+  - **실행 예외(Runtime Exception)**
+    - 컴파일하는 과정에서 예외 처리 코드를 검사하지 않는 예외
+    - 실행 예외 발생 시 JVM에서는 해당 예외 클래스로 객체를 생성하고 예외 처리 코드에서 해당 객체를 사용할 수 있도록 해줌
+  - 두 가지 예외 모두 예외 처리가 필요함
+  - 모든 예외 클래스들은 java.lang.Exception 클래스를 상속받음
+    - 실행 예외 클래스들은 Exception을 상속받는 RuntimeException 클래스를 상속받음
+    - JVM에서 RnutimeException을 상속했으면 컴파일러는 예외 처리 코드를 체크하지 않음
+
+
+
+## 10.2 실행 예외
+- 개발자의 경험에 의해 예외 처리 코드를 삽입해야 함
+- 예외가 발생하면 프로그램은 곧바로 종료됨(예외 처리 코드가 없을 경우)
+
+### 10.2.1 NullPointerException
+- 가장 빈번하게 발생하는 실행 예외
+- 객체 참조가 없는 상태, 즉 null 값을 갖는 참조 변수로 객체 접근 연산자인 도트(.)를 사용했을 때 발생함
+
+### 10.2.2 ArrayIndexOutOfBoundsException
+- 배열에서 인덱스 범위를 초과하여 사용할 경우 발생
+- 배열값을 읽기 전에 배열의 길이를 먼저 조사해주면 예방할 수 있음
+
+### 10.2.3 NumberFormatException
+- Integer와 Double과 같은 포장(Wrapper) 클래스에서 parseXXX() 메소드를 사용할 때, 숫자로 변환될 수 없는 문자가 포함되어 있을 때 발생
+
+### 19.2.4 ClassCastException
+- 억지로 타입 변호나을 시도할 경우 발생
+- 예외발생 방지를 위해 타입 변환이 가능한지 instanceof 연산자로 확인하는 것이 좋음
+
+
+## 10.3 예외 처리 코드
+- 예외가 발생했을 경우 프로그램의 갑작스러운 종료를 막고, 정상 실행을 유지할 수 있도록 처리하는 코드
+- 일반 예외 발생 가능성이 있는 코드가 있다면 자바 컴파일러는 컴파일 오류를 발생시킴
+  - 개발자로 하여금 강제적으로 예외 처리 코드를 작성하도록 요구함
+- 실행 예외는 컴파일러가 체크해주지 않기 때문에 예외 처리 코드를 개발자의 경험을 바탕으로 작성해야 함
+- 예외 처리를 위해 **try-catch-finally** 블록을 사용함
+- **try 블록**
+  - 예외 발생 가능 코드가 위치함
+- **catch 블록**
+  - 예외 처리 코드 작성
+- **finally 블록**
+  - 예외 발생 여부와 상관없이 항상 실행됨
+  - try 블록과 catch 블록에서 return문을 사용하더라도 finally 블록은 항상 실행됨
+
+
+## 10.4 예외 종류에 따른 처리 코드
+
+### 10.4.1 다중 catch
+- 다양한 종류의 예외 처리를 위해 다중 catch 블록을 작성함
+
+### 10.4.2 catch 순서
+- 상위 예외 클래스가 하위 예외 클래스보다 아래쪽에 위치해야 함
+```java
+try {
+  // ...
+} catch (Exception e) {   
+  // ArrayIndexOutOfBoundsExcetion의 상위 클래스인 Exception 클래스가 더 위에 있기 때문에 모든 예외가 여기서만 처리되고 다른 catch 블록은 실행되지 않음
+  // ...
+} catch (ArrayIndexOutOfBoundsExcetion e) {
+  // ...
+}
+```
+
+### 10.4.3 멀티 catch
+- catch 괄호() 안에 동일하게 처리하고 싶은 예외를 |로 연결함
+```java
+try {
+  // ...
+} catch (ArrayIndexOutOfBoundsExcetion | NumberFormatException e) {
+  // ...
+}
+```
+
+
+## 10.5 자동 리소스 닫기
+- **try-with-resources**을 사용하여 예외 발생 여부와 상관없이 사용했던 리소스 객체의 close() 메소드를 호출해서 안전하게 리소스를 닫아줌
+- python의 with open: 과 비슷한 개념인듯
+- try {}에서 예외가 발생하면 우선 close()로 리소스를 닫고 catch 블록을 실행함
+
+```java
+try (FileInputStream fis = new FileInputStream("file.txt")) {
+  // ...
+} catch (IOException e) {
+  // ...
+}
+```
+```java
+try (   // 복수 개의 리소스를 사용한다면 아래 코드와 같이 사용
+  FileInputStream fis = new FileInputStream("file1.txt");
+  FileInputStream fis = new FileInputStream("file2.txt");
+) {
+  // ...
+} catch (IOException e) {
+  // ...
+}
+```
+- try-with-resources를 사용하기 위해서는 리소스 객체가 **java.lang.AutoCloseable** 인터페이스를 구현하고 있어야 함
+- AutoCloseable에는 close() 메소드가 정의되어 있어 try-with-resources에서 close() 메소드를 자동으로 호출함
+
+```java
+// FileInputStream.java
+public class FileInputStream implements AutoCloseable {
+  private String file;
+
+  public FileInputStream(String file) {
+    this.file = file;
+  }
+
+  public void read() {
+    System.out.println(file + "을 읽습니다");
+  }
+
+  @Override
+  public void close() throws Exception {
+    System.out.println(file + "을 닫습니다");
+  }
+}
+```
+```java
+// TryWithResourceExample.java
+public class TryWithResourceExample {
+  public static void main(String[] args) {
+    try (FileInputStream fis = new FileInputStream("file.txt")) {
+      fis.read();
+      throw new Exception();  // 강제적으로 예외를 발생시킴
+    } catch (Exception e) {
+      System.out.println("예외 처리 코드가 실행되었습니다");
+    }
+  }
+}
+```
+
+
+## 10.6 예외 떠넘기기
+- 메소드를 호출한 곳으로 예외를 떠넘길 수 있음
+- **throws** 키워드는 메소드 선언부 끝에 작성되어 메소드에서 처리하지 않은 예외를 호출한 곳으로 떠넘기는 역할을 함
+- throws 키워드 뒤에는 떠넘길 예외 클래스를 쉼표로 구분하여 나열해주면 됨
+- **throws Exception**만으로 모든 예외를 떠넘길 수도 있음
+- throws 키워드가 붙어 있는 메소드는 반드시 try 블록 내에서 호출되어야 함
+  - 그렇지 않으면 컴파일 에러 발생
+- main() 메소드에서도 throws 키워드를 사용해서 예외를 떠넘길 수 있음
+  - JVM이 예외 내용을 콘솔에 출력함으로써 최종적으로 예외 처리를 하게 됨
+  - 좋은 방법은 아님
+  - main()에선 try-catch 블록으로 예외를 최종 처리하는 것이 바람직함
+
+
+## 10.7 사용자 정의 예외와 예외 발생
+- **애플리케이션 예외(Application Exception)** : 애플리케이션 서비스와 관련된 예외
+- 개발자가 직접 정의해서 만들어야 하므로 사용자 정의 예외라고도 함
+
+### 10.7.1 사용자 정의 예외 클래스 선언
+- 일반 예외 또는 실행 예외로 선언할 수 있음
+  - 일반 예외로 선언할 경우 Exception을 상속함
+  - 실행 예외로 선언할 경우 RuntmieException을 상속함
+- 사용자 정의 예외 클래스 이름은 Exception으로 끝나는 것이 좋음
+- 필드, 생성자, 메소드 선언들을 포함할 수 있지만 대부분 생성자 선언만을 포함함
+  - 생성자는 두 개를 선언하는 것이 일반적임
+  - 매개 변수가 없는 기본 생성자
+  - 예외 발생 원인(예외 메세지)을 전달하기 위해 String 타입의 매개 변수를 갖는 생성자
+    - 상위 클래스의 생성자를 호출하여 예외 메세지를 넘겨줌
+
+```java
+// BalanceInsufficientException.java
+
+public class BalanceInsufficientException extends Exception {
+    public BalanceInsufficientException() {}
+    public BalanceInsufficientException(String message) {
+        super(message);
+    }
+}
+
+```
+
+### 10.7.2 예외 발생시키기
+- throw new XXXXException();
+
+```java
+// Account.java
+
+public class Account {
+    private long balance;
+
+    public Account() {}
+
+    public long getBalance() {
+        return balance;
+    }
+
+    public void deposit(int money) {    // 예금
+        balance += money;
+    }
+
+    public void withdraw(int money) throws BalanceInsufficientException {   // 출금
+        if (balance < money) {
+            throw new BalanceInsufficientException("잔고부족 : " + (money - balance) + " 모자람");
+        }
+        balance -= money;
+    }
+}
+```
+
+### 10.8.2 예외 정보 얻기
+- try 블록에서 예외가 발생되면 예외 객체는 catch 블록의 매개 변수에 참조하게 됨
+  - catch 블록의 매개 변수를 이용하면 예외 객체의 정보를 알 수 있음
+  - String 타입의 메시지를 갖는 생성자를 이용헀다면, 메세지는 예외 객체 내부에 저장됨
+  - 예외 메세지는 왜 예외가 발생했는지에 대한 간단한 설명이 포함됨
+- getMessage() 메소드 : 예외 객체 내부의 예외 메세지를 얻을 수 있음
+- printStackTrace() 메소드
+  - 예외 발생 코드를 추적해서 모두 콘솔에 출력함
+  - 어떤 예외가 어디서 발생헀는지 상세하게 출력해주어 프로그램을 테스트하면서 오류를 찾을 때 활용됨
+
+```java
+// AccountExample.java
+
+public class AccountExample {
+    public static void main(String[] args) {
+        Account account = new Account();
+
+        account.deposit(10000);
+        System.out.println("예금액 : " + account.getBalance());
+
+        try {
+            account.withdraw(30000);    // 잔고가 출금액보다 적기 때문에 예외 발생
+        } catch (BalanceInsufficientException e) {
+            String message = e.getMessage();
+            System.out.println(message);
+            System.out.println("================================");
+            e.printStackTrace();
+        }
+    }
+}
+```
+- 출력결과
+```
+예금액 : 10000
+잔고부족 : 20000 모자람
+================================
+Chapter10.AccountExample.BalanceInsufficientException: 잔고부족 : 20000 모자람
+	at Chapter10.AccountExample.Account.withdraw(Account.java:18)
+	at Chapter10.AccountExample.AccountExample.main(AccountExample.java:11)
+```
