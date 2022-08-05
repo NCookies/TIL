@@ -1997,3 +1997,98 @@ public class FinalizeExample {
 ...
 */
 ```
+
+## 11.4 Objects 클래스
+
+- 정적 메소드들로 구성된 Object의 유틸리티 클래스
+
+### 11.4.1 객체 비교(compare(T a, T b, Comparator<T>c))
+- 두 객체를 비교자(Comparator)로 비교해서 int값을 리턴함
+
+### 11.4.2 동등 비교(equals()와 deepEquals())
+
+#### Objects.equals(Object a, Object b)
+  - 두 객체의 동등을 비교함
+  - a와 b가 모두 null일 경우 true를 리턴함
+![Objects.equals](img/ThisIsJava/11_Objects.equals.png)
+
+#### Objects.deepEquals(Object a, Object b)
+  - 두 객체의 동등을 비교함
+  - a와 b가 서로 다른 배열일 경우, 항목 값이 모두 같다면 true를 리턴함
+![Objects.deepEquals](img/ThisIsJava/11_Objects.deepEquals.png)
+
+### 11.4.3 해시코드 생성
+- 매개값으로 주어진 값들을 이용해서 해시 코드를 생성함
+- 클래스가 여러 가지 필드를 가지고 있을 때 이 필드들로부터 해시코드를 생성하게 되면 동일한 필드값을 가지는 객체는 동일한 해시코드를 가질 수 있음
+
+### 11.4.4 널 여부 조사(isNull(), nonNull(), requireNonNull())
+
+#### Objects.isNull(Object obj)
+- 매개값이 null일 경우 true 리턴
+
+#### Objects.nonNull(Object obj)
+- 매개값이 non null일 경우 true 리턴
+
+#### Objects.requireNonNull(...)
+- 첫 번째 매개값이 not null이면 첫 번째 매개값을 리턴하고 null이면 모두 NullPointerException을 발생시킴
+- 두 번째 매개값은 NullPointerException의 예외 메세지를 제공함
+
+### 11.4.5 객체 문자 정보(toString())
+- 객체의 문자 정보를 리턴함
+- 첫 번째 매개값이 not null이면 toString()으로 얻은 값을 리턴하고, null이면 "null" 또는 두 번째 매개값인 nullDefault를 리턴함
+
+
+## 11.5 System 클래스
+- 운영체제의 일부 기능을 이용할 수 있음
+- System 클래스의 모든 필드와 메소드는 정적(static) 필드와 정적(static) 메소드로 구성되어 있음
+
+### 11.5.1 프로그램 종료(exit())
+- 현재 실행하고 있는 프로세스를 강제 종료시키는 역할을 함
+- int 매개값을 종료 상태값이라고 함
+  - 일반적으로 정상 종료일 경우 0으로 지정하고 비정상 종료일 경우 0 이외의 다른 값을 줌
+  - 특정 값이 입력되었을 경우에만 종료하게 할 수 있음
+
+```java
+public class ExitExample {
+    public static void main(String[] args) {
+        // 보안 관리자 설정
+        System.setSecurityManager(new SecurityManager() {
+            @Override
+            public void checkExit(int status) {
+                if (status != 5) {
+                    throw new SecurityException();
+                }
+            }
+        });
+
+        for (int i = 0; i <= 5; i++) {
+            System.out.println(i);
+
+            try {
+                // JVM 종료 요청
+                System.exit(i);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+### 11.5.2 쓰레기 수집기 실행(gc())
+- JVM은 메모리가 부족할 때와 CPU가 한가할 때에 쓰레기 수집기(GC, Garbage Collector)를 실행시켜 사용하지 않는 객체를 자동 제거함
+- 가능한 빨리 GC를 실행해달라고 요청하는 것이기 때문에 바로 실행되는 것은 아님
+  - JVM이 빠른 시간 내에 GC를 실행시키기 위해 노력함
+- 쓰레기가 생길 때마다 GC가 동작한다면 성능 측면에서 좋지 않음
+  - gc()는 메모리가 열악하지 않은 환경이라면 거의 사용할 일이 없음
+
+### 11.5.3 현재 시각 읽기(currentTimeMills(), nanoTime())
+- 컴퓨터의 시계로부터 현재 시각을 읽어서 밀리세컨드(1/1000초) 단위와 나노세컨드(1/10^9초) 단위의 long 값을 리턴함
+- 주로 프로글매의 실행 소요 시간 측정에 사용됨
+
+### 11.5.4 시스템 프로퍼티 읽기(getProperty())
+- 시스템 프로퍼티 : JVM이 시작할 때 자동 설정되는 시스템의 속성값
+  - 운영체제 종류, JVM 버전, 파일 경로 구분자 등
+
+### 11.5.5 환경 변수 읽기(getenv())
+- 환경 변수 : 운영체제에서 이름(Name)과 값(Value)으로 관리되는 문자열 정보
