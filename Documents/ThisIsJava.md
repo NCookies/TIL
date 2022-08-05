@@ -9,6 +9,7 @@
 ##### [8. 인터페이스](#8-인터페이스)
 ##### [9. 중첩 클래스와 중첩 인터페이스](#9-중첩-클래스와-중첩-인터페이스)
 ##### [10. 예외 처리](#10-예외-처리)
+##### [11. 기본 API 클래스](#11-기본-api-클래스)
 
 ---
 
@@ -1552,7 +1553,6 @@ public class Main {
     - JVM에서 RnutimeException을 상속했으면 컴파일러는 예외 처리 코드를 체크하지 않음
 
 
-
 ## 10.2 실행 예외
 - 개발자의 경험에 의해 예외 처리 코드를 삽입해야 함
 - 예외가 발생하면 프로그램은 곧바로 종료됨(예외 처리 코드가 없을 경우)
@@ -1783,4 +1783,217 @@ public class AccountExample {
 Chapter10.AccountExample.BalanceInsufficientException: 잔고부족 : 20000 모자람
 	at Chapter10.AccountExample.Account.withdraw(Account.java:18)
 	at Chapter10.AccountExample.AccountExample.main(AccountExample.java:11)
+```
+
+--- 
+
+# 11. 기본 API 클래스
+
+## 11.2 java.lang과 java.util 패키지
+
+### 11.2.1 java.lang 패키지
+- 자바 프로그램의 기본적인 클래스를 담고 있는 패키지
+- 이 패키지의 클래스와 인터페이스는 import 없이 사용 가능(String, System 등)
+
+### 11.2.2 java.util 패키지
+- 자바 프로그램 개발에 조미료 같은 역할을 하는 클래스들을 담고 있는 패키지
+- 컬렉션 클래스들이 대부분을 차지가혹 있음
+
+
+## 11.3 Object 클래스
+- extends 키워드로 다른 클래스를 상속하지 않으면 암시적으로 java.lang.Object 클래스를 상속하게 됨
+- 따라서 자바의 모든 클래스는 Object 클래스의 자식이거나 자손 클래스임
+- 모든 객체는 Object 타입으로 자동 타입 변환될 수 있음
+
+## 11.3.1 객체 비교(equals())
+- 두 객체를 동등 비교할 때 흔히 사용함
+- 같은 객체이건 다른 객체이건 상관없이 **객체가 저장하고 있는 데이터**가 동일한지를 비교하여 리턴값을 내놓음
+- Object의 equlas() 메소드를 overriding하여 커스텀 객체에도 적용할 수 있음
+
+```java
+public class Member {
+  public String id;
+
+  public Member(String id) {
+    this.id = id;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Member) {    // 동일한 타입의 객체인지 먼저 확인해야 함
+      Member member = (Member) obj;
+      if (id.equals(member.id)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+}
+```
+
+### 11.3.2 객체 해시코드(hashCode())
+- 객체 해시코드 : 객체를 식별할 하나의 정수값
+- Object의 hashCode() 메소드는 **객체의 메모리 번지**를 이용해서 해시코드를 만들어 리턴하므로 객체마다 다른 값을 가지고 있음
+
+### 11.3.3 객체 문자 정보(toString())
+
+- 객체를 문자열로 표현한 값인 문자 정보를 리턴함
+- Object의 toString() 메소드의 리턴값은 별 의미는 없는 정보임
+  - 하위 크래스에서 해당 메소드를 오버라이딩하여 간결하고 유익한 정보를 리턴하도록 함
+  - Date 클래스는 경우 현재 시스템의 날짜와 시간 정보를 리턴함
+  - String 클래스는 저장하고 있는 문자열을 리턴함
+- System.out.println() 메소드에 매개값으로 객체를 주면 객체의 toString() 메소드를 호출해서 리턴값을 받아 출력함
+
+### 11.3.4 객체 복제(clone())
+- 원본 객체의 필드값과 동일한 값을 가지는 새로운 객체를 생성하는 것
+  - 원본 객체를 안전하게 보호하기 위함
+
+#### 얕은 복제(thin clone)
+- 필드값을 복사해서 객체를 복제
+- 기본 타입의 경우 값 복사가 일어나고, 참조 타입일 경우 객체의 번지가 복사됨
+  - 복제 객체에서 참조 객체를 변경하면 원본 객체도 변경된 객체를 가지게 됨
+- Object의 clone() 메소드는 자신과 동일한 필드값을 가진 얕은 복제된 객체를 리턴함
+- 객체 복제를 위해서는 원본 객체는 반드시 **java.lang.Cloneable** 인터페이스를 구현하고 있어야 함
+  - 클래스 **설계자가 복제를 허용**한다는 의도적인 표시를 하기 위함
+  - 구현하지 않으면 CLoneNotSupportedException 예외가 발생함
+  - clone() 메소드는 호출 시 try-catch 구문이 필요함
+
+```java
+public class Member implements Cloneable {
+    public String id;
+    public int age;
+    public boolean adult;
+
+    public Member(String id, int age, boolean adult) {
+        this.id = id;
+        this.age = age;
+        this.adult = adult;
+    }
+
+    public Member getMember() {
+        Member cloned = null;
+
+        try {
+            cloned = (Member) clone();  // clone() 메소드의 리턴 타입은 Object이므로 타입 캐스팅 해야함
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        return cloned;
+    }
+}
+```
+
+#### 깊은 복제(deep clone)
+- 참조하고 있는 객체도 복제함
+- clone() 메소드를 재정의하여 참조 객체를 복제하는 코드를 직접 작성해야 함
+
+```java
+public class Member implements Cloneable {
+    public String id;
+    public int age;
+    public boolean adult;
+    public int[] scores;
+    public Car car;
+
+    public Member(String id, int age, boolean adult, int[] scores, Car car) {
+        this.id = id;
+        this.age = age;
+        this.adult = adult;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSuportedException {
+        // 얕은 복제 수행
+        Member cloned = (Member) super.clone();
+
+        // 깊은 복제 수행
+        cloned.scores = Arrays.copyOf(this.scores, this.scores.length);
+        cloned.car = new Car();
+
+        // 깊은 복제된 Member 객체 리턴
+        return cloned;
+    }
+
+    public Member getMember() {
+        Member cloned = null;
+
+        try {
+            cloned = (Member) clone();  // 재정의된 clone() 메소드 호출
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        return cloned;
+    }
+}
+```
+
+### 11.3.5 객체 소멸자(finalize())
+- GC는 객체를 소멸하기 직전에 객체의 소멸자를 호출함
+  - 기본적으로 실행 내용이 없으며, 오버라이딩해서 사용
+  - 사용했던 자원(데이터 연결, 파일 등)을 닫고 싶거나, 중요한 데이터를 저장할 때 사용
+- System.gc()를 호출해서 GC를 가급적 빨리 실행하도록 JVM에 요청할 수 있음
+- GC는 객체를 무작위로 소멸시키지 않고 메모리의 상태를 보고 일부만 소멸시킴
+  - 메모리가 부족할 때 그리고 CPU가 한가할 때에 JVM에 의해서 자동 실행됨
+  - 때문에 finalize() 메소드가 호출되는 시점은 명확하지 않음
+  - 원하는 때에 자원을 해제하거나 데이터를 저장하고 싶다면, 해당 기능을 수행하는 메소드를 구현하고 명시적으로 호출하는 것이 좋음
+  
+```java
+// Counter.java
+
+public class Counter {
+    private int no;
+
+    public Counter(int no) {
+        this.no = no;
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        System.out.println(no + "번 객체의 finalize()가 실행됨");
+    }
+}
+```
+```java
+// FinalizeExample.java
+
+public class FinalizeExample {
+    public static void main(String[] args) {
+        Counter counter = null;
+
+        for (int i = 1; i <= 50; i++) {
+            counter = new Counter(i);
+            counter = null;     // Counter 객체를 쓰레기로 만듦
+
+            System.gc();        // GC 실행 요청
+        }
+    }
+}
+
+/* 실행 결과
+1번 객체의 finalize()가 실행됨
+31번 객체의 finalize()가 실행됨
+37번 객체의 finalize()가 실행됨
+42번 객체의 finalize()가 실행됨
+47번 객체의 finalize()가 실행됨
+50번 객체의 finalize()가 실행됨
+49번 객체의 finalize()가 실행됨
+48번 객체의 finalize()가 실행됨
+46번 객체의 finalize()가 실행됨
+45번 객체의 finalize()가 실행됨
+44번 객체의 finalize()가 실행됨
+43번 객체의 finalize()가 실행됨
+41번 객체의 finalize()가 실행됨
+40번 객체의 finalize()가 실행됨
+39번 객체의 finalize()가 실행됨
+38번 객체의 finalize()가 실행됨
+36번 객체의 finalize()가 실행됨
+35번 객체의 finalize()가 실행됨
+34번 객체의 finalize()가 실행됨
+33번 객체의 finalize()가 실행됨
+32번 객체의 finalize()가 실행됨
+...
+*/
 ```
