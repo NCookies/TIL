@@ -2092,3 +2092,6 @@ public class ExitExample {
 
 ### 11.5.5 환경 변수 읽기(getenv())
 - 환경 변수 : 운영체제에서 이름(Name)과 값(Value)으로 관리되는 문자열 정보
+
+
+## 11.6 Class 클래스
