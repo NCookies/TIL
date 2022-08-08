@@ -1257,6 +1257,7 @@ public class ImplementationC implements InterfaceC {
   }
 }
 ```
+
 ```java
 public class InterfaceExample {
   public void main(String[] args) {
