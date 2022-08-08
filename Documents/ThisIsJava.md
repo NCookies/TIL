@@ -1263,6 +1263,7 @@ public class InterfaceExample {
   public void main(String[] args) {
     ImplementationC impl = new ImplementationC();
 
+
     InterfaceA ia = impl;
     ia.methodA();
     ia.methodB();     // 에러 발생!!
@@ -2096,3 +2097,184 @@ public class ExitExample {
 
 
 ## 11.6 Class 클래스
+- 자바는 클래스와 인터페이스의 메타 데이터를 java.lang 패키지에 소속된 Class 클래스로 관리함
+  - 메타데이터 : 클래스의 이름, 생성자 정보, 필드 정보, 메소드 정보 등을 말함
+
+### 11.6.1 Class 객체 얻기(getClass(), forName())
+- getClass()
+  - Class 객체를 얻기 위해 사용
+  - 해당 클래스로 객체를 생성하거나 forName() 메소드를 통해 사용 가능
+
+```java
+// CarExample.java
+
+public class ClassExample {
+    public static void main(String[] args) {
+        Car car = new Car();
+        Class clazz1 = car.getClass();
+        System.out.println(clazz1.getName());
+        System.out.println(clazz1.getSimpleName());
+        System.out.println(clazz1.getPackage().getName());
+        System.out.println();
+
+        try {
+            Class clazz2 = Class.forName("Chapter11.Class.Car");
+            System.out.println(clazz2.getName());
+            System.out.println(clazz2.getSimpleName());
+            System.out.println(clazz2.getPackage().getName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### 11.6.2 리플렉션
+- 리플렉션(Reflection) : Class 객체를 이용하여 클래스의 생성자, 필드, 메소드 정보를 알아내는 것
+- getDeclaredFields(), getDeclaredMethods() : 클래스에 선언된 멤버만 가져오고 상속된 멤버는 가져오지 않음. private 멤버도 가져옴
+- getFields(), getMethods() : 상속된 멤버도 가져오지만 public 멤버만 가져옴
+
+```java
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
+public class ReflectionExample {
+    public static void main(String[] args) throws Exception {
+        Class clazz = Class.forName("Chapter11.Class.Car");
+
+        System.out.println("[클래스 이름]");
+        System.out.println(clazz.getName());
+        System.out.println();
+
+        // 생성자 이름과 매개 변수 정보 출력
+        System.out.println("[생성자 정보]");
+        Constructor[] constructors = clazz.getDeclaredConstructors();
+        for (Constructor constructor : constructors) {
+            System.out.print(constructor.getName() + "(");
+            Class[] parameters = constructor.getParameterTypes();
+            printParameters(parameters);
+            System.out.println(")");
+        }
+        System.out.println();
+
+        System.out.println("[메소드 정보]");
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            System.out.print(method.getName() + "(");
+            Class[] parameters = method.getParameterTypes();
+            printParameters(parameters);
+            System.out.println(")");
+        }
+    }
+
+    private static void printParameters(Class[] parameters) {
+        // 매개 변수 정보 출력
+        for (int i = 0; i < parameters.length; i++) {
+            System.out.print(parameters[i].getName());
+            if (i < (parameters.length - 1)) {
+                System.out.print(", ");
+            }
+        }
+    }
+}
+
+/*
+[클래스 이름]
+Chapter11.Class.Car
+
+[생성자 정보]
+Chapter11.Class.Car()
+
+[메소드 정보]
+printCar(java.lang.String, int)
+*/
+```
+
+### 11.6.3 동적 객체 생성(newInstance())
+- Class 객체를 이용하면 new 연산자를 사용하지 않아도 동적으로 객체를 생성할 수 있음
+- 런타임 시에 클래스 이름이 결정되는 경우에 매우 유용하게 사용됨
+- newInstance() 메소드는 기본 생성자를 호출해서 객체를 생성하기 때문에 반드시 클래스에 기본 생성자가 존재해야 함
+  - 만약 매개변수가 있는 생성자를 사용하려면 리플렉션으로 생성자를 얻어와야 함
+  - InstantiationException : 해당 클래스가 추상 클래스이거나 인터페이스일 경우 발생
+  - IllegalAccessException : 클래스나 생성자가 접근 제한자로 인해 접근할 수 없을 경우 발생
+- newInstance() 메소드의 리턴 타입은 Object임
+  - 원래 클래스 타입으로 변환해야만 사용 가능 -> 강제 타입 변환
+  - 그러나 클래스 타입을 모르는 상태. 인터페이스를 사용하여 해결
+
+```java
+// Action.java
+
+public interface Action {
+    public void execute();
+}
+```
+
+```java
+// SendAction.java
+public class SendAction implements Action {
+    @Override
+    public void execute() {
+        System.out.println("데이터를 보냅니다");
+    }
+}
+```
+
+```java
+// ReceiveAction.java
+public class ReceiveAction implements Action {
+    @Override
+    public void execute() {
+        System.out.println("데이터를 받습니다");
+    }
+}
+```
+
+```java
+// NewInstanceExample.java
+
+public class NewInstanceExample {
+    public static void main(String[] args) {
+        try {
+            Class clazz = Class.forName("Chapter11.Class.NewInstance.SendAction");
+            // Class clazz = Class.forName("Chapter11.Class.NewInstance.ReceiveAction");
+
+            Action action = (Action) clazz.newInstance();
+            action.execute();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+## 11.9 StringBuffer, StringBuilder 클래스
+- String은 내부의 문자열을 수정할 수 없음
+  - replace() 메소드를 사용하거나 + 연산을 사용할 경우  대체된 새로운 문자열을 리턴함
+  - 문자열을 결합하는 + 연산자를 많이 사용할수록 프로그램의 성능을 느리게 하는 요인이 됨
+  - StringBuffer : 멀티 스레드 환경에서 사용할 수 있도록 동기화가 적용되어 있어 스레드에 안전함
+  - StringBuilder : 단일 스레드 환경에서만 사용하도록 설계되어 있음
+
+
+## 11.12 Wraaper(포장) 클래스
+- 기본 타입(primitive type)의 값을 갖는 객체
+  - 기본 타입의 값을 내부에 두고 포장
+  - 포장하고 있는 기본 타입의 값은 외부에서 변경할 수 없음
+  - 내부의 값을 변경하려면 새로운 포장 객체를 만들어야 함
+
+### 11.12.1 박싱(Boxing)과 언박싱(UnBoxing)
+- 박싱(Boxing) : 기본 타입의 값을 포장 객체로 만드는 과정
+- 언박싱(Unboxing) : 포장 객체에서 기본 타입의 값을 얻어내는 과정
+
+### 11.12.2 자동 박싱과 언박싱
+= 자동 박싱 : 포장 클래스 타입에 기본값이 대입될 경우에 발생
+- 자동 언박싱 : 기본 타입에 포장 객체가 대입될 경우에 발생
+
+### 11.12.3 문자열을 기본 타입 값으로 변환
+- 포장 클래스의 주요 용도
+  - 기본 타입의 값을 박싱해서 포장 객체로 만드는 것
+  - 문자열을 기본 타입 값으로 변환할 때에도 많이 사용됨
