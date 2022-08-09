@@ -2573,3 +2573,12 @@ ThreadB의 methodB 작업 실행
 
 - 위 그림에서 ThreadB가 sleep() 메소드로 일시 정지 상태가 될 때 ThreadB에서 InterruptedException이 발생함 -> while 문을 빠져나와 run() 메소드를 정상 종료하게 됨
 - 스레드가 일시 정지 상태가 되지 않으면 interrupt() 메소드 호출은 의미가 없기 때문에 Thread.interrupted() 또는 인스턴스 메소드인 isInterruped() 메소드를 사용하여 while 문을 빠져나가게 할 수 있음
+
+
+## 12.7 데몬 스레드
+
+- 주 스레드의 작업을 돕는 보조적인 역할을 수행하는 스레드
+- 주 스레드가 종료되면 강제적으로 자동 종료됨
+- setDaemon(true)를 호출하여 사용
+  - start() 메소드 호출 전에 해야 함. 그렇지 않으면 예외 발생
+  - isDaemon() 메소드로 스레드가 데몬 스레드인지 확인할 수 있음
