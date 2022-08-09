@@ -10,6 +10,7 @@
 ##### [9. 중첩 클래스와 중첩 인터페이스](#9-중첩-클래스와-중첩-인터페이스)
 ##### [10. 예외 처리](#10-예외-처리)
 ##### [11. 기본 API 클래스](#11-기본-api-클래스)
+##### [12. 멀티 스레드](#12-멀티-스레드)
 
 ---
 
@@ -2278,3 +2279,297 @@ public class NewInstanceExample {
 - 포장 클래스의 주요 용도
   - 기본 타입의 값을 박싱해서 포장 객체로 만드는 것
   - 문자열을 기본 타입 값으로 변환할 때에도 많이 사용됨
+
+
+---
+
+# 12. 멀티 스레드
+
+- 프로세스(process) : 운영체제로부터 실행에 필요한 메모리를 할당받아 애플리케이션의 콛를 실행한 것
+- 멀티 태스킹(multi tasking)
+  - 두 가지 이상의 작업을 동시에 처리하는 것
+  - 운영체제는 멀티 태스킹을 할 수 있도록 CPU 및 메모리 자원을 프로세스마다 적절히 할다해주고 병렬로 실행시킴
+- 멀티 프로세스(multi process)
+  - 애플리케이션 단위의 멀티 태스킹
+  - 자신의 메모리를 가지고 서로 독립적임
+- 멀티 스레드(multi thread)
+  - 하나의 코드 실행 흐름인 스레드가 여러 개
+  - 애플리케이션 내부에서의 멀티 태스킹
+  - 하나의 스레드가 예외를 발생시키면 다른 스레드에도 영향 -> 예외 처리에 만전을 기해야 함
+
+
+## 12.1 메인 스레드
+- 모든 자바 어플리케이션은 메인 스레드(main thread)가 main() 메소드를 실행하며 시작됨
+- 메인 스레드는 필요에 따라 작업 스레드들을 만들어서 병렬로 코드를 실행함
+- 실행 중인 스레드가 하나라도 있다면, 프로세스는 종료되지 않음
+
+
+## 12.2 작업 스레드 생성과 실행
+
+### 12.2.1 Thread 클래스로부터 직접 생성
+- Runnable을 매개값으로 갖는 생성자를 호출
+  - Runnable은 인터페이스 타입이기 때문에 구현 객체를 만들어 대입해야 함
+  - 익명 객체를 매개값으로 사용할 수 있음
+- start() 메소드를 호출해야 스레드가 실행됨
+
+```java
+class Task implements Runnable {
+  public void run() {
+
+  }
+}
+
+// Runnable 구현 객체를 만들어서 대입
+Runnable task = new Task();
+Thread thread1 = new Thread(task);
+
+// 익명 객체를 매개값으로 사용
+Thread thread2 = new Thread(new Runnable() {
+  public void run() {
+
+  }
+});
+
+// 람다식을 매개값으로 사용
+Thread thread3 = new Thread( () -> {
+
+});
+
+// 스레드 실행
+thread1.start();
+thread2.start();
+```
+
+### 12.2.2 Thread 하위 클래스로부터 생성
+- Thread 클래스를 상속한 후 run 메소드를 오버라이딩해서 스레드가 실행할 코드를 작성
+
+### 12.2.3 스레드의 이름
+- 스레드는 자신의 이름을 가지고 있음
+- 디버깅할 때 스레드가 어떤 작업을 하는지 확인하기 위해 사용
+- setName(), getName() : Thread의 인스턴스 메소드. 스레드의 이름을 설정하고 가져올 수 있음
+- currentThread() : Thread의 정적 메소드. 코드를 실행하는 현재 스레드의 참조를 얻을 수 있음
+
+
+## 12.3 스레드 우선순위
+- #### 동시성(Concurrency)
+  - 멀티 작업을 위해 하나의 코어에서 멀티 스레드가 번갈아가며 실행하는 성질
+  - 병렬 작업을 수행하는 것처럼 보이지만, 사실은 빠르게 번갈아가며 실행함
+- #### 병렬성(Parallelism)
+  - 멀티 작업을 위해 멀티 코어에서 개별 스레드를 동시에 실행하는 성질
+- 스레드의 개수가 코어의 수보다 많을 경우, 스레드를 어떤 순서에 의해 동시성으로 실행할 것인가를 결정해야 함 -> **스레드 스케줄링**
+- #### 스레드 스케줄링
+  - 우선순위(Priority) 방식
+    - 우선순위가 높은 스레드가 실행 상태를 더 많이 가지도록 스케줄링
+    - 개발자가 코드로 제어할 수 있음
+  - 순환 할당(Round-Robin) 방식 
+    - 시간 할당량(Time Slice)을 정해서 하나의 스레드를 정해진 시간만큼 실행하고 다시 다른 스레드를 실행하는 방식
+    - JVM에 의해 정해지기 때문에 코드로 제어할 수 없음
+
+
+## 12.4 동기화 메소드와 동기화 블록
+
+### 12.4.1 공유 객체를 사용할 때의 주의할 점
+- 스레드들이 객체를 공유해서 작업해야 되는 경우가 있음
+- 서로 사용하는 값이 겹쳐서 엉터리 값을 사용하게 될 수 있음
+
+### 12.4.2 동기화 메소드 및 동기화 블록
+- 스레드 작업이 끝날 때까지 객체에 잠금을 걸어서 다른 스레드가 사용할 수 없도록 해야함
+- 임계 영역(ciritical section)
+  - 단 하나의 스레드만 실행할 수 있는 코드 영역
+  - 자바는 임계 영역을 지정하기 위해 동기화(synchronized) 메소드와 동기화 블록을 제공함
+- syncrhronized 키워드는 인스턴스와 정적 메소드 어디든 붙일 수 있음
+- 동기화 메소드와 동기화 블록이 여러 개 있을 경우, 스레드가 이들 중 하나를 실행할 때 다른 스레드는 해당 메소드는 물론이고 다른 동기화 메소드 및 블록도 실행 못함
+
+
+## 12.5 스레드 상태
+#### 실행 대기 상태
+- 아직 스케줄링이 되지 않아서 실행을 기다리고 있는 상태
+
+#### 실행(Running) 상태
+- 실행 대기 상태에 있는 스레드 중에서 스레드 스케줄링으로 선택된 스레드가 비로서 CPU를 점유하고 run() 메소드를 실행하는 상태
+
+#### 종료 상태
+- 실행 상태에서 run() 메소드가 종료될 떄의 상태
+
+#### 일시 정지 상태
+- 스레드가 실행할 수 없는 상태
+- 스레드가 실행 상태로 다시 가기 위해서는 일시 정지 상태에서 실행 대기 상태로 가야함
+
+스레드는 실행 대기 상태와 실행 상태를 번갈아가면서 run() 메소드를 조금씩 실행함
+
+
+## 12.6 스레드 상태 제어
+- 실행 중인 스레드의 상태를 변경하는 것
+![thread_control_state](img/ThisIsJava/12_thread_control_state.png)
+
+### 12.6.1 주어진 시간동안 일시 정지(sleep())
+- 주어진 시간 동안 일시 정지 상태가 된 후, 다시 실행 대기 상태로 돌아감
+
+### 12.6.2 다른 스레드에게 실행 양보(yield())
+- yield() 메소드를 호출한 스레드는 실행 대기 상태로 돌아가고, 동일한 우선순위 또는 높은 우선 순위를 갖는 다른 스레드가 실행 기회를 가질 수 있도록 함
+
+```java
+public void run() {
+  while (true) {
+    // work가 false이거나 true로 변경되는 시점이 불명확하다면
+    // 어떠한 실행문도 가지지 않고 무의미한 반복을 함
+    if (work) {
+      System.out.println("ThreadA 작업 내용");
+    }
+  }
+}
+```
+
+```java
+public void run() {
+  while (true) {
+    if (work) {
+      System.out.println("ThreadA 작업 내용");
+    } else {
+      // 다른 스레드에게 실행을 양보함
+      Thread.yield();
+    }
+  }
+}
+```
+
+### 12.6.3 다른 스레드의 종료를 기다림(join())
+- 다른 스레드가 종료될 때까지 기다렸다가 실행할 때 사용
+
+```java
+SumThread sumThread = new SumThread();
+sumThread.start();
+
+try {
+  // sumThread가 종료될 때까지 메인스레드를 일시 정지시킴
+  sumThread.join();
+} catch (InterruptedException e) {
+
+}
+```
+
+## 12.6.4 스레드 간 협업(wait(), notify(), notifyAll())
+- 정확한 교대 작업이 필요할 경우에 사용
+  - 자신의 작업이 끝나면 상대방 스레드를 일시 정지 상태에서 풀어주고 자신은 일시 정지 상태로.
+- 공유 객체에 두 스레드가 작업할 내용을 각각 동기화 메소드로 구분해놓음
+- notify() : wait()에 의해 일시 정지된 스레드 중 한 개를 실행 대기 상태로 만듦
+- notifyAll() : wait()에 의해 일시 정지된 모든 스레드들을 실행 대기 상태로 만듦
+- 위 메소드들은 모두 Object 클래스에 선언된 메소드이므로 모든 공유 객체에서 호출 가능
+- 동기화 메소드 또는 동기화 블록 내에서만 사용 가능
+
+```java
+// WorkObject.java
+
+public class WorkObject {
+    public synchronized void methodA() {
+        System.out.println("ThreadA의 methodA 작업 실행");
+        System.out.println(Thread.currentThread().getName());
+        notify();
+
+        try {
+            wait();
+        } catch (InterruptedException e) {
+
+        }
+    }
+
+    public synchronized void methodB() {
+        System.out.println("ThreadB의 methodB 작업 실행");
+        notify();
+
+        try {
+            wait();
+        } catch (InterruptedException e) {
+
+        }
+    }
+}
+```
+
+```java
+// ThreadA.java
+
+public class ThreadA extends Thread {
+    private WorkObject workObject;
+
+    public ThreadA(WorkObject workObject) {
+        this.workObject = workObject;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            workObject.methodA();
+        }
+    }
+}
+```
+
+```java
+// ThreadB.java
+
+public class ThreadB extends Thread {
+    private WorkObject workObject;
+
+    public ThreadB(WorkObject workObject) {
+        this.workObject = workObject;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            workObject.methodB();
+        }
+    }
+}
+```
+
+```java
+// WaitNotifyExample.java
+
+public class WaitNotifyExample {
+    public static void main(String[] args) {
+        WorkObject sharedObject = new WorkObject();
+
+        ThreadA threadA = new ThreadA(sharedObject);
+        ThreadB threadB = new ThreadB(sharedObject);
+
+        threadA.start();
+        threadB.start();
+    }
+}
+
+/*
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+ThreadA의 methodA 작업 실행
+ThreadB의 methodB 작업 실행
+*/
+```
+
+### 12.6.5 스레드의 안전한 종료(stop 플래그, interrupt())
+- stop() 메소드로 스레드를 종료하게 되면 사용 중이던 자원들이 불안전한 상태로 남겨짐 -> 메모리 낭비
+- run() 메소드가 종료되도록 유도하는 방법이 좋음
+  - stop 플래그를 이용해서 스레드의 종료를 유도함
+
+#### interrupt() 메소드
+![interrupt](img/ThisIsJava/12_interrupt.png)
+
+- 위 그림에서 ThreadB가 sleep() 메소드로 일시 정지 상태가 될 때 ThreadB에서 InterruptedException이 발생함 -> while 문을 빠져나와 run() 메소드를 정상 종료하게 됨
+- 스레드가 일시 정지 상태가 되지 않으면 interrupt() 메소드 호출은 의미가 없기 때문에 Thread.interrupted() 또는 인스턴스 메소드인 isInterruped() 메소드를 사용하여 while 문을 빠져나가게 할 수 있음
