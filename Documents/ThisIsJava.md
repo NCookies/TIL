@@ -2576,9 +2576,133 @@ ThreadB의 methodB 작업 실행
 
 
 ## 12.7 데몬 스레드
-
 - 주 스레드의 작업을 돕는 보조적인 역할을 수행하는 스레드
 - 주 스레드가 종료되면 강제적으로 자동 종료됨
 - setDaemon(true)를 호출하여 사용
   - start() 메소드 호출 전에 해야 함. 그렇지 않으면 예외 발생
   - isDaemon() 메소드로 스레드가 데몬 스레드인지 확인할 수 있음
+
+
+## 12.8 스레드 그룹
+- 관련된 스레드를 묶어서 관리할 목적으로 이용함
+- 스레드는 반드시 하나의 스레드 그룹에 포함되는데, 기본적으로 자신을 생성한 스레드와 같은 스레드 그룹에 속하게 됨
+
+### 12.8.1 스레드 그룹 이름 얻기
+
+```java
+import java.util.Map;
+import java.util.Set;
+
+public class ThreadInfoExample {
+    public static void main(String[] args) {
+        AutoSaveThread autoSaveThread = new AutoSaveThread();
+        autoSaveThread.setName("AutoSaveThread");
+        autoSaveThread.setDaemon(true);     // 데몬 스레드 설정
+        autoSaveThread.start();
+
+        Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
+        Set<Thread> threads = map.keySet();
+        for (Thread thread : threads) {
+            System.out.println("Name : " + thread.getName() + ((thread.isDaemon()) ? "(데몬)" : "(주)"));
+            System.out.println("\t" + "소속그룹 : " + thread.getThreadGroup().getName());       // 스레드 그룹 이름 출력
+            System.out.println();
+        }
+    }
+}
+
+/*
+Name : Monitor Ctrl-Break(데몬)
+	소속그룹 : main
+
+Name : Finalizer(데몬)
+	소속그룹 : system
+
+Name : main(주)
+	소속그룹 : main
+
+Name : Signal Dispatcher(데몬)
+	소속그룹 : system
+
+Name : Reference Handler(데몬)
+	소속그룹 : system
+
+Name : AutoSaveThread(데몬)
+*/
+```
+
+### 12.8.2 스레드 그룹 생성
+- ThreadGroup() 생성자를 이용해서 만들 수 있음
+  - 매개변수로 스레드 그룹 이름(String)만 주거나 부모 스레드그룹(ThreadGroup)을 줄 수 있음
+
+### 12.8.3 스레드 그룹의 일괄 interrupt()
+- 스레드 그룹에서 제공하는 interrupt() 메소드를 이용하여 그룹 내에 포함된 모든 스레드들을 일괄 interrupt 할 수 있음
+  - 포함된 모든 스레드의 interrupt() 메소드를 내부적으로 호출함
+  - InterruptedException 예외 처리를 해주지는 않기 때문에 안전한 종료를 위해서 개별 스레드가 예외 처리를 해야함
+
+```java
+// WorkThread.java
+
+public class WorkThread extends Thread {
+    public WorkThread(ThreadGroup threadGroup, String threadName) {
+        super(threadGroup, threadName);
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println(getName() + " interrupted");
+                break;
+            }
+        }
+        System.out.println(getName() + " 종료됨");
+    }
+}
+```
+
+```java
+// ThreadGroupExample.java
+
+public class ThreadGroupExample {
+    public static void main(String[] args) {
+        ThreadGroup myGroup = new ThreadGroup("myGroup");
+        WorkThread workThreadA = new WorkThread(myGroup, "workThreadA");
+        WorkThread workThreadB = new WorkThread(myGroup, "workThreadB");
+
+        workThreadA.start();
+        workThreadB.start();
+
+        System.out.println("[ main 스레드 그룹의 list() 메소드 출력 내용 ]");
+        ThreadGroup mainGroup = Thread.currentThread().getThreadGroup();
+        mainGroup.list();
+        System.out.println();
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+
+        System.out.println("[ myGroup 스레드 그룹의 interrupt() 메소드 호출 ]");
+        myGroup.interrupt();
+    }
+}
+
+/*
+[ main 스레드 그룹의 list() 메소드 출력 내용 ]
+java.lang.ThreadGroup[name=main,maxpri=10]
+    Thread[main,5,main]
+    Thread[Monitor Ctrl-Break,5,main]
+    java.lang.ThreadGroup[name=myGroup,maxpri=10]
+        Thread[workThreadA,5,myGroup]
+        Thread[workThreadB,5,myGroup]
+
+[ myGroup 스레드 그룹의 interrupt() 메소드 호출 ]
+workThreadA interrupted
+workThreadA 종료됨
+workThreadB interrupted
+workThreadB 종료됨
+*/
+```
