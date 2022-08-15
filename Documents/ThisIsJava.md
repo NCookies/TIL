@@ -3098,4 +3098,4 @@ failed() 실행 : java.lang.NumberFormatException: For input string: "삼"
 
 ---
 
-13. 제너릭
+# 13. 제너릭
