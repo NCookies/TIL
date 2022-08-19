@@ -3099,3 +3099,245 @@ failed() 실행 : java.lang.NumberFormatException: For input string: "삼"
 ---
 
 # 13. 제너릭
+
+## 13.1 왜 제네릭을 사용해야 하는가?
+- 잘못된 타입이 사용될 수 있는 문제를 **컴파일 과정**에서 제거할 수 있음
+- 클래스와 인터페이스, 그리고 메소드를 정의할 때 타입(type)을 파라미터(parameter)로 사용할 수 있도록 함
+- 타입 파라미터 : 코드 작성 시 구체적인 타입으로 대체되어 다양한 코드를 생성할 수 있게함
+  
+#### 컴파일 시 강한 타입 체크를 할 수 있음
+- 자바 컴파일러는 제네릭 코드에 대한 강한 타입 체크를 함
+- 에러는 사전에 방지하는 것이 좋음
+
+#### 타입 변환(casting)을 제거함
+- 비제네릭 코드는 불필요한 타입 변환을 하기 때문에 프로그램 성능에 악영향을 끼침
+```java
+List list = new ArrayList();
+list.add("hello");
+STring str = (String) list.get(0);  // 타입 변환을 해야 함
+```
+- List에 저장되는 요소를 String 타입으로 국한하기 때문에 타입 변환을 하지 않음
+```java
+List<String> list = new ArrayList<String>();
+list.add("hello");
+String str = list.get(0);           // 타입 변환을 하지 않음
+```
+
+
+## 13.2 제네릭 타입(class<T>, interface<T>)
+- 제네릭 타입 : 타입을 파라미터로 가지는 클래스와 인터페이스
+- 이름 뒤에 "<>" 부호가 붙고, 사이에 타입 파라미터가 위치함
+- 실제 클래스가 사용될 때 구체적인 타입을 지정함으로써 타입 변환을 최소화시킴
+
+#### 비제네릭 코드
+```java
+// Box.java
+/* Object 타입을 사용하면 모든 종류의 자바 객체를 저장할 수 있다는 장점이 있지만,
+저장할 때 타입 변환이 발생하고, 읽어올 때에도 타입 변환이 발생함
+이러한 현상이 반복되면 프로그램의 성능에 악영향을 끼침
+*/
+public class Box {
+  private Object object;
+  public void set(Object object) { this.object = object; }
+  public Object get() { return object; }
+}
+```
+```java
+// Apple.java
+public class Apple {
+
+}
+```
+```java
+// BoxExample.java
+public class BoxExample {
+  public static void main(String[] args) {
+    Box box = new Box();
+    box.set("홍길동");                    // String -> Object (자동 타입 변환)
+    String name = (String) box.get();    // Object -> String (강제 타입 변환)
+
+    box.set(new Apple());                // Apple -> Object (자동 타입 변환)
+    Apple apple = (Apple) box.get();     // Object -> Apple (강제 타입 변환)
+  }
+}
+```
+
+#### 제네릭 코드
+```java
+// Box.java
+public class Box<T> {
+    private T t;
+    public T get() { return t; }
+    public void set(T t) { this.t = t; }
+}
+
+```
+```java
+// BoxExample.java
+public class BoxExample {
+    public static void main(String[] args) {
+        Box<String> box1 = new Box<>();
+        box1.set("Hello");
+        String str = box1.get();
+
+        Box<Integer> box2 = new Box<>();
+        box2.set(6);                // 자동 Boxing
+        int value = box2.get();     // 자동 Unboxing
+    }
+}
+
+```
+
+## 13.3 멀티 타입 파라미터(class<K, V, ...>, interface<K, V, ...>)
+- 제네릭 타입은 두 개 이상의 멀티 타입 파라미터를 사용할 수 있음
+  - 이 경우 각 타입 파라미터를 콤마로 구분함
+- 자바 7부터 제네릭 타입 파라미터의 중복 기술을 줄이기 위해 다이아몬드 연산자 <>를 제공함
+```java
+// 기존 코드
+Product<Tv, String> product = new Product<Tv, String>();
+
+// 자바7부터 적용됨
+Product<Tv, String> product = new Product<>();
+```
+
+
+## 13.4 제네릭 메소드(<T, R> R method(T t))
+- 제네릭 메소드 : 매개 타입과 리턴 타입으로 타입 파라미터를 갖는 메소드
+- 호출 방식
+  - 코드에서 타입 파라미터의 구체적인 타입을 명시적으로 지정
+  - 컴파일러가 매개값의 타입을 보고 구체적인 타입을 추정
+
+```java
+Box<Integer> box = <Integer>boxing(100);  // 타입 파라미터를 명시적으로 Integer로 지정
+Box<Integer> box = boxing(100);           // 타입 파라미터를 Integer로 추정
+```
+- 제네릭 메소드 예시 코드
+```java
+// Util.java
+
+public class Util {
+    public static <K, V> boolean compare(Pair<K, V> p1, Pair<K, V> p2) {
+        boolean keyCompare = p1.getKey().equals(p2.getKey());
+        boolean valueCompare = p1.getValue().equals(p2.getValue());
+
+        return keyCompare && valueCompare;
+    }
+}
+
+```
+
+```java
+// Pair.java
+
+public class Pair<K, V> {
+    private K key;
+    private V value;
+
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public void setKey(K key) {
+        this.key = key;
+    }
+
+    public void setValue(V value) {
+        this.value = value;
+    }
+
+    public K getKey() {
+        return key;
+    }
+
+    public V getValue() {
+        return value;
+    }
+}
+```
+
+```java
+// CompareMethodExample.java
+
+public class CompareMethodExample {
+    public static void main(String[] args) {
+        Pair<Integer, String> p1 = new Pair<>(1, "사과");
+        Pair<Integer, String> p2 = new Pair<>(1, "사과");
+        
+        boolean result1 = Util.<Integer, String>compare(p1, p2);    // 구체적인 타입 명시적 지정
+        if (result1) {
+            System.out.println("논리적으로 동등한 객체입니다");
+        } else {
+            System.out.println("논리적으로 동등하지 않은 객체입니다");
+        }
+
+        Pair<String, String> p3 = new Pair<>("user1", "홍길동");
+        Pair<String, String> p4 = new Pair<>("user2", "홍길동");
+        
+        boolean result2 = Util.compare(p3, p4);                     // 구체적인 타입 추정
+        if (result2) {
+            System.out.println("논리적으로 동등한 객체입니다");
+        } else {
+            System.out.println("논리적으로 동등하지 않은 객체입니다");
+        }
+    }
+}
+```
+
+
+## 13.5 제한된 타입 파라미터(<T extends 최상위타입>)
+- 타입 파라미터에 지정되는 구체적인 타입을 제한할 필요가 종종 있음
+- 타입 파라미터의 뒤에 extends 키워드를 붙이고 상위 타입을 명시하면 됨
+  - 클래스뿐만 아니라 인터페이스도 가능함
+  - 인터페이스도 implements가 아니라 extends 사용
+- 타입 파라미터에 지정되는 구체적인 타입은 상위 타입이거나 상위 타입의 하위 또는 구현 클래스만 가능함
+  - 메소드의 중괄호 {} 안에서 타입 파라미터 변수로 사용 가능한 것은 상위 타입의 멤버(필드, 메소드)로 제한됨
+
+```java
+// Util.java
+
+public class Util {
+    public static <T extends Number> int compare(T t1, T t2) {
+        double v1 = t1.doubleValue();
+        double v2 = t2.doubleValue();
+
+        return Double.compare(v1, v2);
+    }
+}
+```
+
+```java
+// BoundedTypeParameterExample.java
+
+public class BoundedTypeParameterExample {
+    public static void main(String[] args) {
+        // String은 Number 타입이 아니기 때문에 에러 발생
+        // String str = Util.compare("a", "b");
+
+        int result1 = Util.compare(10, 20); // int -> Integer 자동 Boxing
+        System.out.println(result1);
+
+        int result2 = Util.compare(4.5, 3); // double -> Double 자동 Boxing
+        System.out.println(result2);
+    }
+}
+```
+
+
+## 13.6 와일드카드 타입(<?>, <? extends ...>, <? super ...>)
+
+#### 제네릭타입<?>
+- Unbonuded Wildcards(제한 없음)
+- 타입 파라미터를 대치하는 구체적인 타입으로 모든 클래스나 인터페이스 타입이 올 수 있음
+
+#### 제네릭타입<? extends 상위타입>
+- Upper Bounded Wildcards(상위 클래스 제한)
+- 타입 파라미터를 대치하는 구체적인 타입으로 상위 타입이나 하위 타입이 올 수 있음
+
+#### 제네릭타입<? extends 하위타입>
+- Lower Bounded Wildcards(하위 클래스 제한)
+- 타입 파라미터를 대치하는 구체적인 타입으로 하위 타입이나 상위 타입이 올 수 있음
+
+
+## 13.7 제네릭 타입의 상속과 구현
+- 제네릭 타입도 다른 타입과 마찬가지로 부모 클래스가 될 수 있음
