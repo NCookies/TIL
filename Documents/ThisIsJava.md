@@ -12,6 +12,7 @@
 ##### [11. 기본 API 클래스](#11-기본-api-클래스)
 ##### [12. 멀티 스레드](#12-멀티-스레드)
 ##### [13. 제너릭](#13-제너릭)
+##### [14. 람다식](#14-람다식)
 
 ---
 
@@ -3341,3 +3342,374 @@ public class BoundedTypeParameterExample {
 
 ## 13.7 제네릭 타입의 상속과 구현
 - 제네릭 타입도 다른 타입과 마찬가지로 부모 클래스가 될 수 있음
+
+---
+
+# 14. 람다식
+  
+- 최근 들어 함수적 프로그래밍이 다시 부각되고 있음 -> 병렬 처리와 이벤트 지향 프로그래밍에 적합하기 때문
+- 자바는 **함수적 프로그래밍**을 위해 자바8부터 람다식(Lambda Expressions) 지원
+- 람다식
+  - 익명 함수(anonymous function)를 생성하기 위한 식
+  - 자바 코드가 매우 간결해지고, 컬렉션의 요소를 필터링하거나 매핑해서 원하는 결과를 쉽게 집계함
+  - 형태는 매개변수르 가진 코드 블록이지만, 런타임 시에는 익명 구현 객체를 생성함
+
+
+## 14.2 람다식 기본 문법
+- 함수적 스타일의 람다식을 작성하는 방법
+```java
+(타입 매개변수, ...) -> { 실행문; ... }
+```
+- 매개 변수 타입은 런타임 시에 대입되는 값에 따라 자동으로 인식될 수 있기 때문에 일반적으로 언급하지 않음
+- 하나의 매개변수만 있따면 괄호 ()를 생략할 수 있고 하나의 실행문만 있다면 중괄호 {}도 생략할 수 있음
+- 만약 매개변수가 없다면 반드시 빈 괄호 ()를 사용해야 함
+- 중괄호 {}에 return 문만 있을 경우, 람다식에서는 return문을 사용하지 않고 작성할 수 있음
+```java
+(int a) -> { System.out.println(a); }
+(a) -> { System.out.println(a); }
+a -> System.out.println(a)
+() -> System.out.println("hello");
+(x, y) -> { return x + y; }
+(x, y) -> x + y
+```
+
+
+## 14.3 타겟 타입과 함수적 인터페이스
+- 자바는 메소드를 단독으로 선언할 수 없고 항상 클래스의 구성 멤버로 선언해야 함
+- 람다식은 단순히 메소드를 선언하는 것이 아니라 이 메소드를 가지고 있는 객체를 생성함
+- 람다식은 인터페이스 변수에 대입됨. 즉, 인터페이스의 익명 구현 객체를 생성한다는 것
+- 람다식이 대입될 인터페이스를 람다식의 타겟 타입(target type)이라고 함
+
+### 14.3.1 함수적 인터페이스(@FunctionalInterface)
+- 하나의 추상 메소드가 선언된 인터페이스만이 람다식의 타겟 타입이 될 수 있음
+  - 이러한 인터페이스를 함수적 인터페이스(functional interface)라고 함
+- 함수적 인터페이스를 작성할 때 두 개 이상의 추상 메소드가 선언되지 않도록 컴파일러가 체크하도록 할 수 있음
+  - **@FunctionalInterface** 어노테이션 사용
+  - 이 어노테이션은 선택사항이지만 함수적 인터페이스에 실수로 두 개 이상의 추상 메소드를 선언하는 것을 방지할 수 있음
+
+### 14.3.2 매개 변수와 리턴값이 없는 람다식
+- 람다식이 대입된 인터페이스의 참조 변수는 method()를 호출하여 람다식의 중괄호 {}를 실행시킬 수 있음
+```java
+MyFunctionalInterface fi = () -> { ... }
+fi.method();
+```
+
+### 14.3.3 매개 변수가 있는 람다식
+```java
+MyFunctionalInterface fi1 = (x) -> { ... }
+MyFunctionalInterface fi2 = x -> { ... }
+fi1.method();
+fi2.method();
+```
+
+### 14.3.4 리턴값이 있는 람다식
+```java
+MyFunctionalInterface fi1 = (x, y) -> { return x + y; }
+MyFunctionalInterface fi1 = (x, y) -> x + y;
+MyFunctionalInterface fi2 = (x, y) -> { return sum(x, y); }
+MyFunctionalInterface fi2 = (x, y) -> sum(x, y);
+fi1.method();
+fi2.method();
+```
+
+
+## 14.4 클래스 멤버와 로컬 변수 사용
+
+### 14.4.1 클래스의 멤버 사용
+- 람다식 실행 블록에서는 클래스의 멤버인 필드와 메소드를 제약 사항 없이 사용할 수 있음
+- this는 내부적으로 생성되는 익명 객체의 참조가 아니라 람다식을 실행한 객체의 참조임
+
+### 14.4.2 로컬 변수 사용
+- 메소드의 매개 변수 또는 로컬 변수를 사용하려면 이 두 변수는 final 특성을 가져야 함
+  - 이에 대해서는 [9.5.3 익명 객체의 로컬 변수 사용](#953-익명-객체의-로컬-변수-사용) 참고
+- 읽는 것은 허용되지만, 람다식 내부 또는 외부에서는 변경할 수 없음
+
+
+## 14.5 표준 API의 함수적 인터페이스
+- 자바에서 제공되는 표준 API에서 한 개의 추상 메소드를 자기는 인터페이스들은 모두 람다식을 이용해서 익명 구현 객체로 표현이 가능함
+  - Ex) 스레드 작업을 정의하는 Runnable 인터페이스는 run() 메소드만 존재하므로 람다식을 이용해 인스턴스 생성 가능
+- 자바8부터 빈번하게 사용되는 함수적 인터페이스를 java.util.function 표준 API 패키지로 제공함
+  - 메소드 또는 생성자의 매개 타입으로 사용되어 람다식을 대입할 수 있도록 하기 위해서 제공
+
+### 14.5.1 Consumer 함수적 인터페이스
+- 리턴값이 없는 accept() 메소드를 가지고 있음
+
+```java
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.ObjIntConsumer;
+
+public class ConsumerExample {
+    public static void main(String[] args) {
+        Consumer<String> consumer = t -> System.out.println(t + "8");
+        consumer.accept("java");
+
+        BiConsumer<String, String> biConsumer = (t, u) -> System.out.println(t + u);
+        biConsumer.accept("Java", "8");
+
+        DoubleConsumer doubleConsumer = d -> System.out.println("Java" + d);
+        doubleConsumer.accept(8.0);
+
+        ObjIntConsumer<String> objIntConsumer = (t, i) -> System.out.println(t + i);
+        objIntConsumer.accept("Java", 8);
+    }
+}
+
+/* Output
+java8
+Java8
+Java8.0
+Java8
+*/
+```
+
+### 14.5.2 Supplier 함수적 인터페이스
+- 매개 변수가 없고 리턴값이 있는 getXXX() 메소드를 가지고 있음
+- 실행 후 호출한 곳으로 데이터를 리턴(공급)하는 역할
+
+```java
+import java.util.function.IntSupplier;
+
+public class SupplierExample {
+    public static void main(String[] args) {
+        IntSupplier intSupplier = () -> {
+            int num = (int) (Math.random() * 6) + 1;
+            return num;
+        };
+
+        int num = intSupplier.getAsInt();
+        System.out.println("눈의 수 : " + num);
+    }
+}
+/* Output
+눈의 수 : 2
+*/
+```
+
+### 14.5.3 Function 함수적 인터페이스
+- 매개값과 리턴값이 있는 applyXXX() 메소드를 가지고 있음
+- 매개값을 리턴값으로 매핑(타입 변환)하는 역할을 함
+
+```java
+// Student.java
+public class Student {
+    private String name;
+    private int englishScore;
+    private int mathScore;
+
+    public Student(String name, int englishScore, int mathScore) {
+        this.name = name;
+        this.englishScore = englishScore;
+        this.mathScore = mathScore;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getEnglishScore() {
+        return englishScore;
+    }
+
+    public int getMathScore() {
+        return mathScore;
+    }
+}
+```
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+
+public class FunctionExample {
+    private static List<Student> list =Arrays.asList(
+        new Student("홍길동", 90, 96),
+        new Student("신용권", 95, 93)
+    );
+
+    public static void printString(Function<Student, String> function) {
+        for (Student student : list) {      // list에 저장된 항목 수만큼 루핑
+            System.out.println(function.apply(student) + "");
+        }
+        System.out.println();
+    }
+
+    public static void printInt(ToIntFunction<Student> function) {
+        for (Student student : list) {
+            System.out.println(function.applyAsInt(student) + " ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        System.out.println("[학생 이름]");
+        printString(t -> t.getName());
+
+        System.out.println("[영어 점수]");
+        printInt(t -> t.getEnglishScore());
+
+        System.out.println("[수학 점수]");
+        printInt( t -> t.getMathScore() );
+    }
+}
+
+/* Output
+[학생 이름]
+홍길동
+신용권
+
+[영어 점수]
+90 
+95 
+
+[수학 점수]
+96 
+93 
+*/
+```
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.ToIntFunction;
+
+public class FunctionExample2 {
+    private static List<Student> list = Arrays.asList(
+            new Student("홍길동", 90, 96),
+            new Student("신용권", 95, 93)
+    );
+
+    public static double avg(ToIntFunction<Student> function) {
+        int sum = 0;
+        for (Student student : list) {
+            sum += function.applyAsInt(student);
+        }
+        double avg = (double) sum / list.size();
+        return avg;
+    }
+
+    public static void main(String[] args) {
+        double englishAvg = avg(s -> s.getEnglishScore());
+        System.out.println("영어 평균 점수 : " + englishAvg);
+
+        double mathAvg = avg(s -> s.getMathScore());
+        System.out.println("수학 평균 점수 : " + mathAvg);
+    }
+}
+
+/* Output
+영어 평균 점수 : 92.5
+수학 평균 점수 : 94.5
+*/
+```
+
+### 14.5.4 Operator 함수적 인터페이스
+- Function과 동일하게 매개값과 리턴값이 있지만, 매핑(타입 변환)하는 역할보다는 매개값을 이용해서 연산을 수행한 후 동일한 리턴값을 제공하는 역할을 함
+
+```java
+import java.util.function.IntBinaryOperator;
+
+public class OperatorExample {
+    private static int[] scores = {92, 95, 87};
+
+    public static int maxOrMin(IntBinaryOperator operator) {
+        int result = scores[0];
+        for (int score : scores) {
+            result = operator.applyAsInt(result, score);
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        int max = maxOrMin(
+                (a, b) -> {
+                    if (a >= b) return a;
+                    else return b;
+                }
+        );
+        System.out.println("최대값 : " + max);
+
+        int min = maxOrMin(
+                (a, b) -> {
+                    if (a <= b) return a;
+                    else return b;
+                }
+        );
+        System.out.println("최소값 : " + min);
+    }
+}
+
+/* Output
+최대값 : 95
+최소값 : 87
+*/
+```
+
+### 14.5.5 Predicate 함수적 인터페이스
+- 매개변수와 boolean 리턴값이 있는 testXXX() 메소드를 가지고 있음
+- 매개값을 조사해서 true 또는 false를 리턴함
+
+```java
+public class Student {
+    private String name;
+    private String sex;
+    private int score;
+
+    public Student(String name, String sex, int score) {
+        this.name = name;
+        this.sex = sex;
+        this.score = score;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public int getScore() {
+        return score;
+    }
+}
+```
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+
+public class PredicateExample {
+    private static List<Student> list = Arrays.asList(
+            new Student("홍길동", "남자", 90),
+            new Student("김순희", "여자", 90),
+            new Student("감자바", "남자", 95),
+            new Student("박한나", "여자", 92)
+    );
+
+    public static double avg(Predicate<Student> predicate) {
+        int count = 0, sum = 0;
+        for (Student student : list) {
+            if (predicate.test(student)) {
+                count++;
+                sum += student.getScore();
+            }
+        }
+        
+        return (double) sum / count;
+    }
+
+    public static void main(String[] args) {
+        double maleAvg = avg(t -> t.getSex().equals("남자"));
+        System.out.println("남자 평균 점수 : " + maleAvg);
+
+        double femaleAvg = avg(t -> t.getSex().equals("여자"));
+        System.out.println("여자 평균 점수 : " + femaleAvg);
+    }
+}
+
+/* Output
+남자 평균 점수 : 92.5
+여자 평균 점수 : 91.0
+*/
+```
