@@ -3713,3 +3713,271 @@ public class PredicateExample {
 여자 평균 점수 : 91.0
 */
 ```
+
+### 14.5.6 andThen()과 compose() 디폴트 메소드
+- 디폴트 및 정적 메소드는 추상 메소드가 아니기 때문에 함수적 인터페이스에 선언되어도 여전히 함수적 인터페이스의 성질을 잃지 않음
+  - 하나의 추상 메소드를 가지고 있고, 람다식으로 익명 구현 객체를 생성할 수 있는 것을 함수적 인터페이스의 성질이라고 함
+  - Consumer, Function, Operator 종류의 함수적 인터페이스는 andThen()과 compose() 디폴트 메소드를 가지고 있음
+    - 두 개의 함수적 인터페이스를 순차적으로 연결하고, 첫 번째 처리 결과를 두 번째 매개값으로 제공해서 최종 결과값을 얻을 때 사용함
+    - 둘 사이의 차이점은 어떤 함수적 인터페이스부터 먼저 처리하느냐임
+
+#### Consumer의 순차적 연결
+- Consumer 종류의 함수적 인터페이슨는 처리 결과를 리턴하지 않기 때문에 함수적 인터페이스의 호출 순서만 정함
+
+```java
+import java.util.function.Consumer;
+
+public class ConsumerAndThenExample {
+    public static void main(String[] args) {
+        Consumer<Member> consumerA = (m) -> {
+            System.out.println("consumerA : " + m.getName());
+        };
+
+        Consumer<Member> consumerB = (m) -> {
+            System.out.println("consumerB : " + m.getId());
+        };
+
+        Consumer<Member> consumerAB = consumerA.andThen(consumerB);
+        consumerAB.accept(new Member("홍길동", "hong", null));
+    }
+}
+
+/* Output
+consumerA : 홍길동
+consumerB : hong
+*/
+```
+
+```java
+public class Member {
+    private String name;
+    private String id;
+    private Address address;
+
+    public Member(String name, String id, Address address) {
+        this.name = name;
+        this.id = id;
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+}
+```
+
+```java
+public class Address {
+    private String country;
+    private String city;
+
+    public Address(String country, String city) {
+        this.country = country;
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+}
+```
+
+#### Function의 순차적 연결
+- 먼저 실행한 함수적 인터페이스의 결과를 다음 함수적 인터페이스의 매개값으로 넘겨주고, 최종 처리 결과를 리턴함
+
+```java
+import java.util.function.Function;
+
+public class FunctionAndThenComposeExample {
+    public static void main(String[] args) {
+        Function<Member, Address> functionA;
+        Function<Address, String> functionB;
+        Function<Member, String> functionAB;
+        String city;
+
+        functionA = (m) -> m.getAddress();
+        functionB = (m) -> m.getCity();
+        
+        functionAB = functionA.andThen(functionB);
+        city = functionAB.apply(
+                new Member("홍길동", "hong", new Address("한국", "서울"))
+        );
+        System.out.println("거주 도시 : " + city);
+
+        functionAB = functionB.compose(functionA);
+        city = functionAB.apply(
+                new Member("홍길동", "hong", new Address("한국", "서울"))
+        );
+        System.out.println("거주 도시 : " + city);
+    }
+}
+
+/* Output
+거주 도시 : 서울
+거주 도시 : 서울
+*/
+```
+
+### 14.5.7 and(), or(), negate() 디폴트 메소드와 isEqual() 정적 메소드
+- Predicate 종류의 함수적 인터페이스가 가지고 있음
+- negate()는 not 연산 결과를 리턴하는 디폴트 함수임
+
+```java
+import java.util.function.IntPredicate;
+
+public class PredicateAndOrNegateExample {
+    public static void main(String[] args) {
+        // 2의 배수 검사
+        IntPredicate predicateA = a -> a % 2 == 0;
+
+        // 3의 배수 검사
+        IntPredicate predicateB = a -> a % 3 == 0;
+
+        IntPredicate predicateAB;
+        boolean result;
+
+        // and()
+        predicateAB = predicateA.and(predicateB);
+        result = predicateAB.test(9);
+        System.out.println("9는 2와 3의 배수입니까? : " + result);
+        
+        // or()
+        predicateAB = predicateA.or(predicateB);
+        result = predicateAB.test(9);
+        System.out.println("9는 2 또는 3의 배수입니까? : " + result);
+
+        // negate()
+        predicateAB = predicateA.negate();
+        result = predicateAB.test(9);
+        System.out.println("9는 홀수입니까? : " + result);
+    }
+}
+
+/* Output
+9는 2와 3의 배수입니까? : false
+9는 2 또는 3의 배수입니까? : true
+9는 홀수입니까? : true
+*/
+```
+
+- static 메소드인 isEqual()은 동등 비교를 수행함
+```java
+import java.util.function.Predicate;
+
+public class PredicateIsEqualExample {
+    public static void main(String[] args) {
+        Predicate<String> predicate;
+
+        predicate = Predicate.isEqual(null);
+        System.out.println("null, null : " + predicate.test(null));
+
+        predicate = Predicate.isEqual("Java8");
+        System.out.println("null, Java8 : " + predicate.test(null));
+
+        predicate = Predicate.isEqual("Java8");
+        System.out.println("Java8, null : " + predicate.test(null));
+
+        predicate = Predicate.isEqual("Java8");
+        System.out.println("Java8, Java8 : " + predicate.test("Java8"));
+
+        predicate = Predicate.isEqual("Java7");
+        System.out.println("Java7, Java8 : " + predicate.test("Java8"));
+    }
+}
+
+/* Output
+null, null : true
+null, Java8 : false
+Java8, null : false
+Java8, Java8 : true
+Java7, Java8 : false
+*/
+```
+
+### 14.5.8 minBy(), maxBy() 정적 메소드
+- BinaryOperator<T> 함수적 인터페이스는 minBy()와 maxBy() 정적 메소드를 제공함
+  
+```java
+import java.util.function.BinaryOperator;
+
+public class OperatorMinByMaxByExample {
+    public static void main(String[] args) {
+        BinaryOperator<Fruit> binaryOperator;
+        Fruit fruit;
+
+        binaryOperator = BinaryOperator.minBy( (f1, f2) -> Integer.compare(f1.getPrice(), f2.getPrice()));
+        fruit = binaryOperator.apply(new Fruit("딸기", 6000), new Fruit("수박", 10000));
+        System.out.println(fruit.getName());
+
+        binaryOperator = BinaryOperator.maxBy( (f1, f2) -> Integer.compare(f1.getPrice(), f2.getPrice()));
+        fruit = binaryOperator.apply(new Fruit("딸기", 6000), new Fruit("수박", 10000));
+        System.out.println(fruit.getName());
+    }
+}
+
+/* Output
+딸기
+수박
+*/
+```
+
+
+## 14.6 메소드 참조
+- 메소드 참조(Method References) : 메소드를 참조해서 매개변수의 정보 및 리턴 타입을 알아내어, 람다식에서 불필요한 매개 변수를 제거하는 것이 목적임
+- 메소드 참조를 이용하면 코드를 매우 깔끔하게 처리할 수 있음
+```java
+IntBinaryOperator operator = (left, right) -> Math.max(left, right);
+IntBinaryOperator operator = Math::max;
+```
+
+### 14.6.1 정적 메소드와 인스턴스 메소드 참조
+- 정적(static) 메소드를 참조할 경우에는 클래스 이름 뒤에 :: 기호를 붙이고 정적 메소드 이름을 기술함
+- 인스턴스 메소드일 경우 먼저 객체를 생성한 다음 참조 변수 뒤에 :: 기호를 붙이고 인스턴스 메소드 이름을 기술함
+
+```java
+IntBinaryOperator operator;
+
+// 정적 메소드 참조
+operator = (x, y) -> Calculator.staticMethod(x, y);
+operator = Calculator::staticMethod;
+
+// 인스턴스 메소드 참조
+Calculator obj = new Calculator();
+operator = (x, y) -> obj.instanceMethod(x, y);
+operator = obj::instanceMethod;
+```
+
+### 14.6.2 매개 변수의 메소드 참조
+- 람다식에서 제공되는 a 매개 변수의 메소드를 호출해서 b 매개 변수를 매개값으로 사용하는 경우도 있음
+```java
+ToIntBiFunction<String, String> function;
+
+function = (a, b) -> a.compareToIgnoreCase(b);
+function = String::compareToIgnoreCase;
+```
+
+### 14.6.3 생성자 참조
+- 단순히 객체를 생성하고 리턴하도록 구성된 람다식은 생성자 참조로 대치할 수 있음
+- 클래스 이름 뒤에 :: 기호를 붙이고 new 연산자를 기술하면 됨
+- 생성자가 오버로딩 되어 있을 경우, 동일한 매개 변수 타입과 개수를 가지고 있는 생성자를 찾아 실행됨
+  - 만약 해당 생성자가 존재하지 않으면 컴파일 오류 발생
+
+```java
+Function<String, Member> function1 = Member::new;
+Member member1=  function1.apply("angel");
+
+BiFunction<String, String, Member> function2 = Member::new;
+Member member2 = function2.apply("신천사", "angel");
+```
