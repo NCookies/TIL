@@ -1,4 +1,4 @@
-package Chapter14.FunctionalInterface.Ex05;
+package Chapter14.Ex05;
 
 import java.util.function.IntBinaryOperator;
 

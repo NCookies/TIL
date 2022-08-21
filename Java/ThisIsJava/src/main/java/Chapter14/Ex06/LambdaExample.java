@@ -1,4 +1,4 @@
-package Chapter14.FunctionalInterface.Ex06;
+package Chapter14.Ex06;
 
 import java.util.function.ToDoubleFunction;
 
