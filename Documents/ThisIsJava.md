@@ -13,6 +13,7 @@
 ##### [12. 멀티 스레드](#12-멀티-스레드)
 ##### [13. 제너릭](#13-제너릭)
 ##### [14. 람다식](#14-람다식)
+##### [15. 컬렉션 프레임워크](#15-컬렉션-프레임워크)
 
 ---
 
@@ -3980,4 +3981,115 @@ Member member1=  function1.apply("angel");
 
 BiFunction<String, String, Member> function2 = Member::new;
 Member member2 = function2.apply("신천사", "angel");
+```
+
+---
+
+# 15. 컬렉션 프레임워크
+
+## 15.1 컬렉션 프레임워크 소개
+- 컬렉션 프레임워크(Collection Framwork) : 객체들을 효율적으로 추가, 삭제, 검색할 수 있도록 java.util 패키지에 컬렉션과 관련된 인터페이스와 클래스들을 포함시킴
+- 프레임워크 : 사용 방법을 미리 정해 놓은 라이브러리
+- List와 Set은 객체를 추가, 삭제, 검색하는 방법에 많은 공통점이 있기 때문에 공통된 메소드들을 모아 Collection 인터페이스로 정의해두고 있음
+- Map은 키와 값을 하나의 쌍으로 묶어서 관리하는 구조로 되어 있어, List 및 Set과는 사용방법이 완전히 다름
+
+
+## 15.2 List 컬렉션
+- 객체를 일렬로 늘어놓은 구조
+- 객체를 인덱스로 관리하며 객체를 저장하면 자동 인덱스가 부여됨
+- 객체 자체를 저장하는 것이 아니라 객체의 번지를 참조하고, 동일한 객체를 중복 저장할 수 있음
+
+### 15.2.1 ArrayList
+- List 인터페이스의 구현 클래스
+- 배열과 달리 저장 용량(capacity)을 초과한 객체들이 들어오면 자동적으로 저장 용량이 늘어남
+```java
+List<String> list = new ArrayList<String>();
+
+// 처음부터 용량을 지정해줄 수 있음
+// 추후 30개보다 많은 데이터가 들어오면 자동으로 저장 용량이 늘어남
+List<String> list = new ArrayList<String>(30);
+```
+- 중간에 있는 인덱스의 객체를 추가하거나 삭제하면 뒤의 인덱스들이 1씩 밀려나거나 당겨짐
+  - 때문에 잦은 객체 삽입/삭제가 이루어진다면 ArrayList보다는 LinkedList를 사용하는 것이 더 좋음
+  - 만약 맨 마지막 인덱스에서 잦은 삽입/삭제가 이루어진다면 ArrayList가 성능이 더 좋음
+- asList() 메소드를 사용해 객체 생성과 함께 데이터를 넣을 수 있음
+
+### 15.5.2 Vector
+- ArrayList와 동일한 내부 구조를 가지고 있지만 Thread Safe함
+  - 동기화된(synchronized) 메소드로 구성되어 있어 멀티스레드가 동시에 실행할 수 없음
+  - 하나의 스레드가 실행을 완료해야만 다른 스레드에서 실행 가능
+
+### 15.2.3 LinkedList
+- 인접 참조를 링크해서 체인처럼 관리함
+- 빈번한 객체 삭제와 삽입이 일어나는 곳에서는 ArrayList보다 LinkedList가 좋은 성능을 발휘함
+
+|구분|순차적으로 추가/삭제|중간에 추가/삭제|검색|
+|---|---|---|---|
+|ArrayList|빠르다|느리다|빠르다|
+|LinkedList|느리다|빠르다|느리다|
+
+
+## 15.3 Set 컬렉션
+- 저장 순서과 유지되지 않고, 객체를 중복해서 저장할 수 없으며 하나의 null만 저장 가능함
+- 인덱스가 없는 대신 전체 객체를 대상으로 한번씩 반복해서 가져오는 반복자(iterator)를 제공함
+  - 반복자는 Iterator 인터페이스를 구현한 객체로, iterator() 메소드를 호출하여 얻을 수 있음
+
+```java
+while (iterator.hasNext()) {
+  String str = iterator.next();
+  if (str.equals("홍길동")) {
+    iterator.remove();
+  }
+}
+```
+
+### 15.3.1 HashSet
+- 객체를 저장할 때 내부에서 hashCode()와 equals() 메소드를 통해 중복을 검사함
+- 아래 예제에서 정의한 Member 객체의 equals()와 hashCode() 메소드를 재정의함
+
+```java
+import java.util.HashSet;
+import java.util.Set;
+
+public class HashSetExample {
+    public static void main(String[] args) {
+        Set<Member> set = new HashSet<>();
+
+        set.add(new Member("홍길동", 30));
+        set.add(new Member("홍길동", 30));
+
+        System.out.println("총 객체수 : " + set.size());
+    }
+}
+
+/* Output
+총 객체수 : 2
+*/
+```
+
+```java
+public class Member {
+    public String name;
+    public int age;
+
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Member) {
+            Member member = (Member) obj;
+            return member.name.equals(name) && (member.age == age);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() + age;
+    }
+}
 ```
