@@ -4093,3 +4093,130 @@ public class Member {
     }
 }
 ```
+
+
+## 15.4 Map 컬렉션
+- 키(key)와 값(value)으로 구성된 Entry 객체를 저장하는 구조를 가지고 있음
+- 키와 값은 모두 객체임
+- 키는 중복 저장될 수 없지만 값은 중복 저장될 수 있음
+- 동일한 키가 저장된다면 기존의 값은 없어지고 새로운 값으로 대치됨
+- 전체 객체를 대상으로 객체를 하나씩 얻고 싶을 경우
+  - 1) keySet() 메소드로 모든 키를 Set 컬렉션으로 얻은 다음, 반복자를 통해 키를 하나씩 얻고 get() 메소드를 통해 값을 얻음
+  - 2) entrySet() 메소드로 모든 Map.Entry를 Set 컬렉션으로 얻은 다음, 반복자를 통해 Map.Entry를 하나씩 얻고 getKey()와 getValue() 메소드를 이용해 키와 값을 얻음
+
+### 15.4.1 HashMap
+- Map 인터페이스를 구현한 대표적인 Map 컬렉션
+- HashMap의 키로 사용할 객체는 hashCode()와 equals() 메소드를 재정의해서 동등 객체가 될 조건을 정해야 함
+- 키와 값의 타입은 기본 타입은 사용하지 못하고 클래스 및 인터페이스 타입만 가능함
+
+```java
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+public class HashMapExample {
+    public static void main(String[] args) {
+        // Map 컬렉션 생성
+        Map<String, Integer> map = new HashMap<>();
+
+        // 객체 저장
+        map.put("신용권", 85);
+        map.put("홍길동", 90);
+        map.put("동장군", 90);
+        map.put("홍길동", 95);     // 키가 같기 때문에 제일 마지막에 저장한 값으로 대치
+        System.out.println("총 Entry 수 : " + map.size());
+
+        // 객체 찾기
+        System.out.println("\t홍길동 : " + map.get("홍길동"));
+        System.out.println();
+
+        // 객체를 하나씩 처리 - 방법1
+        Set<String> keySet = map.keySet();
+        Iterator<String> keyIterator = keySet.iterator();
+        while (keyIterator.hasNext()) {
+            String key = keyIterator.next();
+            Integer value = map.get(key);
+            System.out.println("\t" + key + " : " + value);
+        }
+        System.out.println();
+
+        // 객체 삭제
+        map.remove("홍길동");
+        System.out.println("총 Entry 수 : " + map.size());
+        
+        // 객체를 하나씩 처리 - 방법2
+        Set<Map.Entry<String, Integer>> entrySet = map.entrySet();
+        Iterator<Map.Entry<String, Integer>> entryIterator = entrySet.iterator();
+
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, Integer> entry = entryIterator.next();
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            System.out.println("\t" + key + " : " + value);
+        }
+        System.out.println();
+
+        // 객체 전체 삭제
+        map.clear();
+        System.out.println("총 Entry 수 : " + map.size());
+    }
+}
+
+/* Output
+총 Entry 수 : 3
+	홍길동 : 95
+
+	홍길동 : 95
+	신용권 : 85
+	동장군 : 90
+
+총 Entry 수 : 2
+	신용권 : 85
+	동장군 : 90
+
+총 Entry 수 : 0
+*/
+```
+
+- 학번과 이름이 동일한 Student를 동등 키로 간주하기 위해 메소드 재정의
+```java
+public class Student {
+    public int sno;
+    public String name;
+
+    public Student(int sno, String name) {
+        this.sno = sno;
+        this.name = name;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Student) {
+            Student student = (Student) obj;
+            return (student.sno == sno) && (student.name == name);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return sno + name.hashCode();
+    }
+}
+```
+
+### 15.4.2 HashTable
+- HashMap과 동일한 내부 구조를 가지고 있지만 thread safe함
+
+### 15.4.3 Properties
+= HashTable의 하위 클래스이고, 키와 값을 String 타입으로만 제한함
+- 프로퍼티(~.properties) 파일을 읽을 때 주로 사용됨
+  - 보통 애플리케이션의 옵션 정보, 데이터베이스 연결 정보, 국제화(다국어) 정보 등이 저장되어 있음
+  - 키와 값이 = 기호로 연결되어 있는 텍스트 파일로 ISO 8859-1 문자셋으로 저장됨
+- getProperty() 메소드를 사용해 해당 키의 값을 얻어올 수 있음
+
+
+### 15.5 검색 기능을 강화시킨 컬렉션
