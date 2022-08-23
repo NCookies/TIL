@@ -4220,3 +4220,177 @@ public class Student {
 
 
 ### 15.5 검색 기능을 강화시킨 컬렉션
+
+- 컬렉션 프레임워크는 검색 기능을 강화시킨 TreeSet과 TreeMap을 제공함
+- 이진 트리(binary tree)를 이용해서 계층적 구조(Tree 구조)를 가지면서 객체를 저장함
+
+### 15.5.1 이진 트리 구조
+- **이진 트리(binary tree)**
+  - 여러 개의 노드(node)가 트리 형태로 연결된 구조
+  - 루트 노드(root node)라고 불리는 하나의 노드에서부터 시작해서 각 노드에 최대 2개의 노드를 연결할 수 있는 구조
+  - 부모 노드의 값보다 작은 노드는 왼쪽에 위치시키고, 부모 노드의 값보다 큰 노드는 오른쪽에 위치시킴
+  - 숫자가 아닌 문자를 저장할 경우에는 문자의 유니코드 값으로 비교함
+  - 값들이 정령되어 있어 그룹핑이 쉽기 때문에 범위 검색을 쉽게 할 수 있음
+
+![binary_tree](img/ThisIsJava/15_binary_tree.png)
+
+### 15.5.2 TreeSet
+- 이진 트리(binary tree)를 기반으로한 Set 컬렉션임
+- 하나의 노드는 노드값인 value와 왼쪽과 오른쪽 자식 노드를 참조하기 위한 두 개의 변수로 구성됨
+
+### 15.5.3 TreeMap
+- 이진 트리를 기반으로 한 Map 컬렉션임
+- TreeSet과 달리 키와 값이 저장된 Map.Entry를 저장함
+
+### 15.5.4 Comparable과 Comparator
+- TreeSet의 객체와 TreeMap의 키는 저장과 동시에 자동 오름차순으로 정렬됨
+  - 숫자 타입일 경우에는 값으로, 문자열 타입일 경우에는 유니코드로 정렬함
+  - Comparable 인터페이스를 구현하여 자동 정렬이 되도록 할 수 있음
+  - Integer, Double, String은 모두 Comparable 인터페이스를 구현하고 있음
+
+```java
+public class Person implements Comparable<Person> {
+    public String name;
+    public int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public int compareTo(@NotNull Person o) {
+        if (age < o.age) return -1;
+        else if (age == o.age) return 0;
+        else return 1;
+    }
+}
+```
+
+```java
+import java.util.Iterator;
+import java.util.TreeSet;
+
+public class ComparableExample {
+    public static void main(String[] args) {
+        TreeSet<Person> treeSet = new TreeSet<>();
+        
+        treeSet.add(new Person("홍길동", 45));
+        treeSet.add(new Person("감자바", 25));
+        treeSet.add(new Person("박지원", 31));
+
+        Iterator<Person> iterator = treeSet.iterator();
+        while (iterator.hasNext()) {
+            Person person = iterator.next();
+            System.out.println(person.name + " : " + person.age);
+        }
+    }
+}
+
+/* Output
+감자바 : 25
+박지원 : 31
+홍길동 : 45
+*/
+```
+
+- TreeSet의 객체와 TreeMap의 키가 Comparable을 구현하고 있지 않을 경우에는 저장하는 순간 ClassCastException이 발생함
+  - 생성자의 매개값으로 정렬자(Comparator)을 제공하여 Comparable 미구현 객체도 정렬시킬 수 있음
+  - 정렬자는 Comparator 인터페이스를 구현한 객체를 말함
+
+```java
+import java.util.Comparator;
+
+public class DescendingComparator implements Comparator<Fruit> {
+    @Override
+    public int compare(Fruit o1, Fruit o2) {
+        if (o1.price < o2.price) return 1;
+        else if (o1.price == o2.price) return 0;
+        else return -1;
+    }
+}
+```
+
+```java
+public class Fruit {
+    public String name;
+    public int price;
+
+    public Fruit(String name, int price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+```
+
+```java
+import java.util.Iterator;
+import java.util.TreeSet;
+
+public class ComparatorExample {
+    public static void main(String[] args) {
+        TreeSet<Fruit> treeSet = new TreeSet<>(new DescendingComparator());
+        treeSet.add(new Fruit("포도", 3000));
+        treeSet.add(new Fruit("수박", 10000));
+        treeSet.add(new Fruit("딸기", 6000));
+
+        Iterator<Fruit> iterator = treeSet.iterator();
+        while (iterator.hasNext()) {
+            Fruit fruit = iterator.next();
+            System.out.println(fruit.name + " : " + fruit.price);
+        }
+    }
+}
+
+/*
+수박 : 10000
+딸기 : 6000
+포도 : 3000
+*/
+```
+
+
+## 15.6 LIFO와 FIFO 컬렉션
+- **후입선출(LIFO : Last In First Out)** : 나중에 넣은 객체가 먼저 빠져나가는 자료구조
+- **선입선출(FIFO : First In First Out)** : 먼저 넣은 객체가 먼저 빠져나가는 자료구조
+
+### 15.6.1 Stack
+```java
+Stack <E> stack = new Stack<Coin>;
+```
+
+### 15.6.2 Queue
+- Queue 인터페이스를 구현한 대표적인 클래스는 LinkedList임
+```java
+Queue<E> queue = new LinkedList<E>();
+```
+
+
+## 15.7 동기화된 컬렉션
+- 컬렉션 프레임워크 대부분의 클래스들은 싱글 스레드 환경에서 사용할 수 있도록 설계되어 있음
+  - 싱글 스레드 환경에서 사용하다가 멀티 스레드 환경으로 전달할 필요가 있음
+  - 비동기화된 메소드를 동기화된 메소드로 래핑하는 Collections의 synchronizedXXX() 메소드를 제공함
+
+```java
+List<T> list = Collections.synchronizedList(new ArrayList<T>());
+Set<E> set = Collections.synchronizedSet(new ArrayLHashSetist<E>());
+Map<K, V> map = Collections.synchronizedMap(new HashMap<K, V>());
+```
+
+
+## 15.8 병렬 처리를 위한 컬렉션
+- 동기화된(synchronized) 컬렉션은 thread safe 하지만 전체 요소를 빠르게 처리하지는 못함
+- 자바는 멀티 스레드가 컬렉션의 요소를 병렬적으로 처리할 수 있도록 특별한 컬렉션을 제공함
+
+#### ConcurrentHashMap
+- 스레드에 안전하면서도 멀티 스레드가 요소를 병렬적으로 처리할 수 있음
+- 부분(segment) 잠금을 사용함
+
+#### ConcurrentLinkedQueue
+- 락-프리(lock-free) 알고리즘을 구현한 컬렉션임
+- 여러 개의 스레드가 동시에 접근할 경우, 잠금을 사용하지 않고도 최소한 하나의 스레드가 안전하게 요소를 저장하거나 얻도록 해줌
+
+```java
+Map<K, V> map = new ConcurrentHashMap<K, V>();
+Queue<E> queue = new ConcurrentLinkedQueue<E>();
+```
