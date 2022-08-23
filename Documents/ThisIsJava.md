@@ -14,6 +14,7 @@
 ##### [13. 제너릭](#13-제너릭)
 ##### [14. 람다식](#14-람다식)
 ##### [15. 컬렉션 프레임워크](#15-컬렉션-프레임워크)
+##### [16. 스트림과 병렬처리](#16-스트림과-병렬-처리)
 
 ---
 
@@ -4393,4 +4394,125 @@ Map<K, V> map = Collections.synchronizedMap(new HashMap<K, V>());
 ```java
 Map<K, V> map = new ConcurrentHashMap<K, V>();
 Queue<E> queue = new ConcurrentLinkedQueue<E>();
+```
+
+---
+
+# 16. 스트림과 병렬 처리
+
+## 16.1 스트림 소개
+- 스트림(Stream)은 자바 8부터 추가된 컬렉션(배열 포함)의 저장 요소를 하나씩 참조해서 **람다식**(함수적-스타일(functional-style))으로 처리할 수 있도록 해주는 반복자임
+
+### 16.1.1 반복자 스트림
+- stream() 메소드로 스트림 객체를 얻고, forEach() 메소드에서 컬렉션의 요소를 소비할 코드를 람다식으로 기술할 수 있음
+
+### 16.1.2 스트림의 특징
+
+#### 람다식으로 요소 처리 코드를 제공한다
+- Stream이 제공하는 대부분의 요소 처리 메소드는 함수적 인터페이스 매개 타입을 가지기 때문에 람다식 또는 메소드 참조를 이용해서 요소 처리 내용을 매개값으로 전달할 수 있음
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+public class LambdaExpressionsExample {
+    public static void main(String[] args) {
+        List<Student> list = Arrays.asList(
+                new Student("홍길동", 90),
+                new Student("신용권", 92)
+        );
+
+        Stream<Student> stream = list.stream();
+        stream.forEach(student -> {
+            String name = student.getName();
+            int score = student.getScore();
+            System.out.println(name + "-" + score);
+        });
+    }
+}
+
+/* Output
+홍길동-90
+신용권-92
+*/
+```
+
+#### 내부 반복자를 사용하므로 병렬 처리가 쉽다
+- 외부 반복자(external iterator) : 개발자가 코드로 직접 컬렉션의 요소를 반복해서 가져오는 코드 패턴
+  - index를 이용하는 for문, Iterator를 이용하는 while문 등이 있음
+- **내부 반복자(internal iterator)** : 컬렉션 내부에서 요소들을 반복시키고, 개발자는 요소당 처리해야 할 코드만 제공하는 코드 패턴
+  - 개발자는 요소 처리 코드에만 집중할 수 있음
+  - 요소들의 반복 순서를 변경하거나, 멀티 코어 CPU를 최대한 활용하기 위해 요소들을 분배시켜 **병렬** 작업을 할 수 있도록 도와줌
+  - 외부 반복자보다 효율적으로 요소를 반복시킬 수 있음
+- 병렬(parallel) 처리 : 한 가지 작업을 서브 작업으로 나누고, 서브 작업들을 분리된 스레드에서 병렬적으로 처리하는 것
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+public class ParallelExample {
+    public static void main(String[] args) {
+        List<String> list = Arrays.asList(
+                "홍길동", "신용권", "감자바", "람다식", "박병렬"
+        );
+
+        // 순차 처리
+        Stream<String> stream = list.stream();
+        stream.forEach(ParallelExample::print);
+        System.out.println();
+
+        // 병렬 처리
+        Stream<String> parallelStream = list.parallelStream();
+        parallelStream.forEach(ParallelExample::print);
+    }
+
+    public static void print(String str) {
+        System.out.println(str + " : " + Thread.currentThread().getName());
+    }
+}
+
+/* Output
+홍길동 : main
+신용권 : main
+감자바 : main
+람다식 : main
+박병렬 : main
+
+감자바 : main
+박병렬 : main
+람다식 : ForkJoinPool.commonPool-worker-19
+신용권 : ForkJoinPool.commonPool-worker-5
+홍길동 : ForkJoinPool.commonPool-worker-19
+*/
+```
+
+#### 스트림은 중간 처리와 최종 처리를 할 수 있다
+- 중간 처리에서는 매핑, 필터링, 정렬을 수행하고 최종 처리에서는 반복, 카운팅, 평균, 총합 등의 집계 처리를 수행함
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class MapAndReduceExample {
+    public static void main(String[] args) {
+        List<Student> studentList = Arrays.asList(
+                new Student("홍길동", 10),
+                new Student("신용권", 20),
+                new Student("유미선", 30)
+        );
+
+        double avg = studentList.stream()
+                .mapToInt(Student::getScore)
+                .average()
+                .getAsDouble();
+
+        System.out.println("평균 점수 : " + avg);
+    }
+}
+
+/* Output
+평균 점수 : 20.0
+*/
 ```
