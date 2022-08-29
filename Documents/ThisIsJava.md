@@ -4597,3 +4597,121 @@ public class StreamPipelinesExample {
 남자 평균 나이 : 37.5
 */
 ```
+
+
+## 16.4 필터링(distinct(), filter())
+- distinct() : Object.equals(Object)가 true이면 동일한 객체로 판단하고 중복을 제거함
+- filter() : 매개값으로 주어진 Predicate가 true를 리턴하는 요소만 필터링함
+
+
+## 16.7 루핑(peek(), forEach())
+- 루핑(looping) : 요소 전체를 반복하는 것
+- peek()는 중간 처리 메소드이고, forEach()는 최종 처리 메소드임
+- peek()는 중간 처리 단계에서 전체 요소를 루핑하면서 추가적인 작업을 하기 위해 사용함
+
+
+## 16.8 매칭
+- allMatch() : **모든 요소**들이 매개값으로 주어진 Predicate의 조건을 만족하는지 조사
+- anyMatch() : **최소한 한 개**의 요소가 매개값으로 주어진 Predicate의 조건을 만족하는지 조사
+- noneMatch() : **모든 요소**들이 매개값으로 주어진 Predicate의 조건을 **만족하지 않는지 조사**
+
+
+## 16.9 기본 집계
+- 집계(Aggregate) : 최종 처리기능으로, 하나의 값으로 산출하는 것을 말함
+
+### 16.9.2 Optional 클래스
+- 값을 저장하는 값 기반 클래스(value-based class)임
+- 집계 값이 존재하지 않을 경우 디폴트 값을 설정할 수 있고, 집계 값을 처리하는 Consumer도 등록할 수 있음
+- 컬렉션에 요소가 없을 경우, 집계 메소드를 실행하면 NoSuchElementException이 발생함
+  - 이를 Optional 클래스의 메소드를 통해 방지할 수 있음
+  - 방법1) isPresent() 메소드가 true를 리턴할 때만 값을 얻어옴
+  - 방법2) orElse() 메소드로 디폴트 값을 정해놓음
+  - 방법3) ifPresent() 메소드로 평균값이 있을 경우에만 값을 이용하는 람다식을 실행함
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
+
+public class OptionalExample {
+    public static void main(String[] args) {
+        List<Integer> list = new ArrayList<>();
+
+        // 방법1
+        OptionalDouble optionalDouble = list.stream()
+                .mapToInt(Integer::intValue)
+                .average();
+        if (optionalDouble.isPresent()) {
+            System.out.println("방법1_평균 : " + optionalDouble.getAsDouble());
+        } else {
+            System.out.println("방법1_평균 : 0.0");
+        }
+
+        // 방법2
+        double avg = list.stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+        System.out.println("방법2_평균 : " + avg);
+
+        // 방법3
+        list.stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .ifPresent(a -> System.out.println("방법3_평균 : " + a));
+    }
+}
+
+/* Output
+방법1_평균 : 0.0
+방법2_평균 : 0.0
+*/
+```
+
+
+## 16.10 커스텀 집계(reduce())
+- 다양한 집계 결과물을 만들 수 있도록 reduce() 메소드를 제공함
+- 매개변수로 스트림에 요소가 전혀 없을 경우 사용되는 디폴트 값인 identity와 집계 처리를 위한 람다식인 XXXOperator가 있음
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class ReductionExample {
+    public static void main(String[] args) {
+        List<Student> studentList = Arrays.asList(
+                new Student("홍길동", 92),
+                new Student("신용권", 95),
+                new Student("김자바", 88)
+        );
+
+        // studentList에 데이터가 없으면 NoSuchElementException 발생
+        int sum1 = studentList.stream()
+                .mapToInt(Student::getScore)
+                .sum();
+
+        // studentList에 데이터가 없으면 NoSuchElementException 발생
+        int sum2 = studentList.stream()
+                .map(Student::getScore)
+                .reduce((a, b) -> a + b)
+                .get();
+
+        // studentList에 데이터가 없으면 0 리턴
+        int sum3 = studentList.stream()
+                .map(Student::getScore)
+                .reduce(0, (a, b) -> a + b);
+
+        System.out.println("sum1 : " + sum1);
+        System.out.println("sum2 : " + sum2);
+        System.out.println("sum3 : " + sum3);
+    }
+}
+
+// TODO: OptionalInt와 Optional<Int>의 차이가 뭘까...
+
+/* Output
+sum1 : 275
+sum2 : 275
+sum3 : 275
+*/
+```
