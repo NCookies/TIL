@@ -4516,3 +4516,84 @@ public class MapAndReduceExample {
 평균 점수 : 20.0
 */
 ```
+
+
+## 16.2 스트림의 종류
+- BaseStream 인터페이스에 모든 스트림에서 사용할 수 있는 공통 메소드들이 정의되어 있음
+
+### 16.2.1 컬렉션으로부터 스트림 얻기
+```java
+Stream<Student> stream = studentList.stream();
+stream.forEach(s -> System.out.println(s.getName()));
+```
+
+### 16.2.2 배열로부터 스트림 얻기
+```java
+String[] strArr = {"A", "B", "C"};
+int[] intArr = {1, 2, 3, 4, 5};
+
+Stream<String> strStream = Arrays.stream(strArr);
+IntStream intStream = Arrays.stream(intArr);
+
+strStream.forEach(a -> System.out.print(a + ","));
+intStream.forEach(a -> System.out.print(a + ","));
+```
+
+### 16.2.3 숫자 범위로부터 스트림 얻기
+```java
+IntStream stream = IntStream.rangeClosed(1, 100);
+stream.forEach(a -> sum += a);
+```
+
+
+## 16.3 스트림 파이프라인
+- 리덕션(Reduction)
+  - 대량의 데이터를 가공해서 축소하는 것
+  - 합계, 평균값, 카운팅, 최대값, 최소값 등이 있음
+  - 리덕션의 결과물로 바로 집계할 수 없을 경우 중간 처리가 필요함
+
+### 16.3.1 중간 처리와 최종 처리
+- 파이프라인(pipeline)
+  - 여러 개의 스트림이 연결되어 있는 구조
+  - 최종 처리를 제외하고는 모두 중간 처리 스트림임
+  - 최종 처리가 시작되기 전까지 중간 처리는 모두 지연(lazy)됨
+  - Stream 인터페이스의 중간처리 메소드들은 중간 처리된 스트림을 리턴함
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.OptionalDouble;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+public class StreamPipelinesExample {
+    public static void main(String[] args) {
+        List<Member> list = Arrays.asList(
+                new Member("홍길동", Member.MALE, 30),
+                new Member("김나리", Member.FEMALE, 20),
+                new Member("신용권", Member.MALE, 45),
+                new Member("박수미", Member.FEMALE, 27)
+        );
+
+        Stream<Member> maleFemaleStream = list.stream();
+        Stream<Member> maleStream = maleFemaleStream.filter(m -> m.getSex() == Member.MALE);
+        IntStream ageStream = maleStream.mapToInt(Member::getAge);
+        OptionalDouble optionalDouble = ageStream.average();
+        double ageAvg_ = optionalDouble.getAsDouble();
+        System.out.println("남자 평균 나이 : " + ageAvg_);
+
+        double ageAvg = list.stream()
+                .filter(m -> m.getSex() == Member.MALE)
+                .mapToInt(Member::getAge)
+                .average()
+                .getAsDouble();
+
+        System.out.println("남자 평균 나이 : " + ageAvg);
+    }
+}
+
+/* Output
+남자 평균 나이 : 37.5
+남자 평균 나이 : 37.5
+*/
+```
