@@ -4916,3 +4916,85 @@ public class GroupingAndReductionExample {
 여학생 전체 이름 : 김수애, 박수미
 */
 ```
+
+
+## 16.12 병렬 처리
+
+- 병렬 처리(Parallel Operation)
+  - 멀티 코어 CPU 환경에서 하나의 작업을 분할해서 각각의 코어가 병렬적으로 처리하는 것
+  - 작업 처리 시간을 줄이기 위한 것이 목적임
+
+### 16.12.1 동시성(Concurrency)과 병렬성(Parellelism)
+- 동시성과 병렬성은 멀티 스레드의 동작 방식이라는 점에서 동일하지만 서로 다른 목적을 가지고 있음
+- 동시성 : 멀티 작업을 위해 멀티 스레드가 번걸아가며 실행하는 성질
+- 병렬성 : 멀티 작업을 위해 멀티 코어를 이용해서 동시에 실행하는 성질
+  - **데이터 병렬성**
+    - 전체 데이터를 쪼개어 서브 데이터들로 만들고 이 서브 데이터들을 병렬 처리해서 작업을 빨리 끝내느 것
+    - 자바 8에서 지원하는 병렬 스트림은 데이터 병렬성을 구현한 것임
+  - **작업 병렬성**
+    - 서로 다른 작업을 병렬 처리하는 것
+    - 대표적인 예시로 웹서버가 있음. 각각의 브라우저에서 요청한 내용을 개별 스레드에서 병렬로 처리함
+
+### 16.12.2 포크조인(ForkJoin) 프레임워크
+- 병렬 스트림을 이용하면 런타임 시에 포크조인 프레임워크가 동작함
+- 포크 단계 : 전체 데이터를 서브 데이터로 분리함. 그리고 이들을 멀티 코어에서 병렬로 처리함
+- 조인 단계 : 서브 결과를 결합해서 최종 결과를 만들어 냄
+
+### 16.12.3 병렬 스트림 생성
+- 코드에서 포크조인 프레임워크를 직접 사용할 수도 있지만, 병렬 스트림을 이용할 경우 백그라운드에서 사용되어 쉽게 사용 가능
+- parallelStream() : 컬렉션으로부터 병렬 스트림을 바로 리턴
+- parallel() : 순차 처리 스트림을 병렬 처리 스트림으로 변환해서 리턴
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class MaleStudentExample {
+    public static void main(String[] args) {
+        List<Student> totalList = Arrays.asList(
+                new Student("홍길동", 10, Student.Sex.MALE),
+                new Student("김수애", 6, Student.Sex.FEMALE),
+                new Student("신용권", 10, Student.Sex.MALE),
+                new Student("박수미", 5, Student.Sex.FEMALE)
+        );
+
+        MaleStudent maleStudent = totalList.parallelStream()
+                .filter(s -> s.getSex() == Student.Sex.MALE)
+                .collect(MaleStudent::new, MaleStudent::accumulate, MaleStudent::combine);
+
+        maleStudent.getList().stream()
+                .forEach(s -> System.out.println(s.getName()));
+    }
+}
+
+/* Output
+[ForkJoinPool.commonPool-worker-19] MaleStudent()
+[ForkJoinPool.commonPool-worker-5] MaleStudent()
+[main] MaleStudent()
+[ForkJoinPool.commonPool-worker-23] MaleStudent()
+[ForkJoinPool.commonPool-worker-23] accumulate()
+[main] accumulate()
+[main] combine()
+[ForkJoinPool.commonPool-worker-23] combine()
+[ForkJoinPool.commonPool-worker-23] combine()
+홍길동
+신용권
+*/
+```
+
+- MaleStudent 객체를 생성하기 위해 MaleStudent::new를 4번 실행시킴
+- 남학생 요소를 수집하기 위해 accumulate를 Sex가 남학생일 때마다 실행시킴
+- 수집이 완료된 4개의 MaleStudent는 3번의 결합으로 최종 MaleStudent가 만ㄷ르어질 수 있으므로 combine이 3번 실행됨
+
+### 16.12.4 병렬 처리 성능
+- 스트림 병렬 처리가 순차 처리보다 항상 실행 성능이 좋은 것은 아님
+- 병렬 처리에 영향을 미치는 요소 3가지
+
+#### 요소의 수와 요소당 처리 시간
+요소의 수가 적고 요소당 처리 시간이 짧으면 순차 처리가 오히려 빠를 수 있음. 병렬 처리는 스레드풀 생성, 스레드 생성이라는 추가적인 비용이 발생하기 때문
+
+#### 스트림 소스의 종류
+ArrayList, 배열은 인덱스로 요소를 관리하기 때문에 포크 단계에서 요소를 쉽게 분리할 수 있어 병렬 처리 시간이 절야됨. 반면 HashSet, TreeSet은 요소 분리가 쉽지 않고, LinkedList 역시 링크를 따라가야 하므로 요소 분리가 쉽지 않음. 따라서 이 소스들은 ArrayList, 배열에 비해 상대적으로 병렬 처리가 늦음
+
+#### 코어(Core)의 수
+싱글 코어 CPU일 경우에는 순차 처리가 빠름. 코어의 수가 많으면 많을수록 병렬 작업 처리 속도는 빨라짐
