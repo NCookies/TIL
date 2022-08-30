@@ -4715,3 +4715,204 @@ sum2 : 275
 sum3 : 275
 */
 ```
+
+
+## 16.11 수집(collect())
+- 스트림은 요소들을 필터링 또는 매핑한 후 요소들을 수집하는 최종 처리 메소드인 collect()를 제공함
+
+### 16.11.1 필터링한 요소 수집
+- 매개값인 Collector(수집기)는 어떤 요소를 어떤 컬렉션에 수집할 것인지를 결정함
+- 리턴값인 Collector에 A(누적기)가 ?로 되어 있는 이유는 Collector가 R(컬렉션)에 T(요소)를 저장하는 방법을 알고 있어 A가 필요없기 때문
+
+```java
+Stream<Student> totalStream = totalList.stream();
+Stream<Student> maleStream = totalStream.filter(s->s.getSex() == Student.Sex.MALE);
+Collector<Student, ?, List<Stduent>> collector = Collectors.toList();
+
+List<Student> maleList = maleStream.collect(collector);
+
+
+List<Student> maleList = totalList.stream()
+  .filter(s->s.getSex() == Student.Sex.MALE)
+  .collect(Collectors.toList());
+```
+
+### 16.11.2 사용자 정의 컨테이너에 수집하기
+- collect 메소드 매개변수
+  - Supplier : 요소들이 수집될 컨테이너 객체(R)를 생성하는 역할
+  - XXXConsumer : 컨테이너 객체(R)에 요소(T)를 수집하는 역할
+  - BiConsumer : 컨테이너 객체(R)를 결합하는 역할. 병렬 처리 스트림에서만 호출됨
+- 리턴 타입 R은 요소들이 최종 수집된 컨테이너 객체임
+  - 순차 처리 스트림에서 리턴 객체는 첫 번째 Supplier가 생성한 객체임
+  - 병렬 처리 스트림에서 리턴 객체는 최종 결합한 컨테이너 객체임
+
+- 학생들 중에서 남학생만 수집하는 MaleStudent 컨테이너 예시
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class MaleStudent {
+    private List<Student> list;
+
+    public MaleStudent() {
+        list = new ArrayList<>();
+        System.out.println("[" + Thread.currentThread().getName() + "] MaleStudent()");
+    }
+
+    public void accumulate(Student student) {
+        list.add(student);
+        System.out.println("[" + Thread.currentThread().getName() + "] accumulate()");
+    }
+
+    public void combine(MaleStudent other) {
+        list.addAll(other.getList());
+        System.out.println("[" + Thread.currentThread().getName() + "] combine()");
+    }
+
+    public List<Student> getList() {
+        return list;
+    }
+}
+```
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class MaleStudentExample {
+    public static void main(String[] args) {
+        List<Student> totalList = Arrays.asList(
+                new Student("홍길동", 10, Student.Sex.MALE),
+                new Student("김수애", 6, Student.Sex.FEMALE),
+                new Student("홍길동", 10, Student.Sex.MALE),
+                new Student("박수미", 5, Student.Sex.FEMALE)
+        );
+
+        MaleStudent maleStudent = totalList.stream()
+                .filter(s -> s.getSex() == Student.Sex.MALE)
+                .collect(MaleStudent::new, MaleStudent::accumulate, MaleStudent::combine);
+
+        maleStudent.getList().stream()
+                .forEach(s -> System.out.println(s.getName()));
+    }
+}
+
+/* Output
+[main] MaleStudent()
+[main] accumulate()
+[main] accumulate()
+홍길동
+홍길동
+*/
+```
+- 순차 처리 스트림에서 MaleStudent() 생성자는 딱 한 번 호출되고, 하나의 MaleStudent 객체만 생성됨
+- accumulate()가 두 번 호출되었기 때문에 요소들이 2번 수집됨
+
+### 16.11.3 요소를 그룹핑해서 수집
+- collect() 메소드는 컬렉션의 요소들을 그룹핑해서 Map 객체를 생성하는 기능 제공
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class GroupingByExample {
+    public static void main(String[] args) {
+        List<Student> totalList = Arrays.asList(
+                new Student("홍길동", 10, Student.Sex.MALE, Student.City.Seoul),
+                new Student("김수애", 6, Student.Sex.FEMALE, Student.City.Busan),
+                new Student("신용권", 10, Student.Sex.MALE, Student.City.Busan),
+                new Student("박수미", 5, Student.Sex.FEMALE, Student.City.Seoul)
+        );
+
+        Map<Student.Sex, List<Student>> mapBySex = totalList.stream()
+                .collect(Collectors.groupingBy(Student::getSex));
+
+        System.out.print("[남학생] ");
+        mapBySex.get(Student.Sex.MALE).stream()
+                .forEach(s -> System.out.print(s.getName() + " "));
+
+        System.out.print("\n[여학생] ");
+        mapBySex.get(Student.Sex.FEMALE).stream()
+                .forEach(s -> System.out.print(s.getName() + " "));
+
+        System.out.println();
+
+        Map<Student.City, List<String>> mapByCity = totalList.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Student::getCity,
+                                Collectors.mapping(Student::getName, Collectors.toList())
+                        )
+                );
+
+        System.out.print("\n[서울] ");
+        mapByCity.get(Student.City.Seoul).stream().forEach(s -> System.out.print(s + " "));
+
+        System.out.print("\n[부산] ");
+        mapByCity.get(Student.City.Busan).stream().forEach(s -> System.out.print(s + " "));
+    }
+}
+
+/* Output
+[남학생] 홍길동 신용권 
+[여학생] 김수애 박수미 
+
+[서울] 홍길동 박수미 
+[부산] 김수애 신용권 
+*/
+```
+
+### 16.11.4 그룹핑 후 매핑 및 집계
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class GroupingAndReductionExample {
+    public static void main(String[] args) {
+        List<Student> totalList = Arrays.asList(
+                new Student("홍길동", 10, Student.Sex.MALE),
+                new Student("김수애", 6, Student.Sex.FEMALE),
+                new Student("신용권", 10, Student.Sex.MALE),
+                new Student("박수미", 5, Student.Sex.FEMALE)
+        );
+
+        // 성별로 평균 점수를 저장하는 Map 얻기
+        Map<Student.Sex, Double> mapBySex = totalList.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Student::getSex,
+                                Collectors.averagingDouble(Student::getScore)
+                        )
+                );
+
+        System.out.println("남학생 평균 점수 : " + mapBySex.get(Student.Sex.MALE));
+        System.out.println("여학생 평균 점수 : " + mapBySex.get(Student.Sex.FEMALE));
+        
+        // 성별을 쉼표로 구분한 이름을 저장하는 Map 얻기
+        Map<Student.Sex, String> mapByName = totalList.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Student::getSex,
+                                Collectors.mapping(
+                                        Student::getName,
+                                        Collectors.joining(", ")
+                                )
+                        )
+                );
+
+        System.out.println("남학생 전체 이름 : " + mapByName.get(Student.Sex.MALE));
+        System.out.println("여학생 전체 이름 : " + mapByName.get(Student.Sex.FEMALE));
+    }
+}
+
+/* Output
+남학생 평균 점수 : 10.0
+여학생 평균 점수 : 5.5
+남학생 전체 이름 : 홍길동, 신용권
+여학생 전체 이름 : 김수애, 박수미
+*/
+```
