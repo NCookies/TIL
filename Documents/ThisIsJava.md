@@ -5050,3 +5050,81 @@ ArrayList, 배열은 인덱스로 요소를 관리하기 때문에 포크 단계
 
 ### 18.2.4 Writer
 - 문자 기반 출력 스트림의 최상위 클래스. 추상 클래스임
+
+
+## 18.3 콘솔 입출력
+- 콘솔(console) : 시스템을 사용하기 위해 키보드로 입력을 받고 화면으로 출력하는 소프트웨어
+
+### 18.3.1 System.in 필드
+- 콘솔로부터 데이터를 입력받기 위해 System 클래스의 in 정적 필드를 사용함
+- System.in은 InputStream 타입의 필드임
+- 한글과 같이 2바이트를 필요로 하는 유니코드는 read()가 아닌 read(byte[] b) 메소드를 이용해야 함
+
+### 18.3.2 System.out 필드
+- 콘솔로부터 데이터를 출력하기 위해 System 클래스의 out 정적 필드를 사용함
+- System.out은 PrintStream 타입의 필드임
+- 한글과 같이 2바이트를 필요로 하는 유니코드는 write()가 아닌 write(byte[] b) 메소드를 이용해야 함
+
+### 18.3.3 Console 클래스
+- 콘솔에서 입력받은 문자열을 쉽게 읽을 수 있도록 java.io.Console 클래스 제공
+- 문자열밖에 읽지 못함
+
+### 18.3.4 Scanner 클래스
+- java.util 패키지의 Scanner 클래스를 이용하여 콘솔로부터 기본 타입의 값을 바로 읽을 수 있음
+
+
+## 18.4 파일 입출력
+
+### 18.4.1 File 클래스
+- IO 패키지(java.io)에서 제공하는 File 클래스는 파일 크기, 파일 속성, 파일 이름 등의 정보를 얻어내는 기능과 파일 생성 및 삭제 기능을 제공함
+  - 디렉터리 생성 및 디렉터리 내 파일 리스트 조회 기능도 있음
+- 파일의 입출력은 스트림을 사용해야 함
+- File.separator 상수로 해당 운영체제에서 사용하는 디렉터리 구분자를 확인할 수 있음
+
+### 18.4.2 FileInputStream
+- 파일로부터 바이트 단위로 읽어들일 때 사용하는 바이트 기반 입력 스트림
+- 파일이 존재하지 않으면 FileNotFoundException을 발생시키므로 try-catch문으로 예외처리 해야함
+- InputStream의 하위 클래스이므로 사용 방법은 동일함
+
+### 18.4.2 FileOutputStream
+- 바이트 단위로 데이터를 파일에 저장할 때 사용하는 바이트 기반 출력 스트림
+- 파일이 이미 존재할 경우 파일을 덮어쓰게 됨
+  - 기존의 파일 내용 끝에 데이터를 추가하려면 생성자의 두 번째 매개값을 true로 주면 됨
+- OutputStream의 하위 클래스이므로 사용 방법은 동일함
+
+```java
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class FileOutputStreamExample {
+    public static void main(String[] args) throws IOException {
+        String originFileName = "./test_img.jpg";
+        String targetFileName = "./test_img_copy.jpg";
+
+        FileInputStream fis = new FileInputStream(originFileName);
+        FileOutputStream fos = new FileOutputStream(targetFileName);
+
+        int readByteNo;
+        byte[] readBytes = new byte[100];
+        while ( (readByteNo = fis.read(readBytes)) != 0) {
+            fos.write(readBytes, 0, readByteNo);
+        }
+        
+        fos.flush();
+        fos.close();
+        fis.close();
+
+        System.out.println("복사 완료");
+    }
+}
+```
+
+### 18.4.4 FileReader
+- 텍스트 파일을 프로그램으로 읽어들일 때 사용하는 문자 기반 스트림
+
+### 18.4.5 FileWriter
+- 텍스트 데이터를 파일에 저장할 때 사용하는 문자 기반 스트림
+
+
+## 18.5 보조 스트림
