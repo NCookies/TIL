@@ -5128,5 +5128,118 @@ public class FileOutputStreamExample {
 
 
 ## 18.5 보조 스트림
+- 다른 스트림과 연결되어 여러 가지 편리한 기능을 제공해주는 스트림
 
+### 18.5.1 문자 변환 보조 스트림
+- 바이트 입출력 스트림에 연결되어 문자 입출력 스트림인 Reader/Writer로 변환 가능
+- InputStreamReader, OutputStreamWriter
 
+### 18.5.2 성능 향상 보조 스트림
+- 프로그램의 실행 성능은 입출력이 가장 늦은 장치를 따라감
+- 중간에 메모리 버퍼(buffer)를 두고 작업함으로써 실행 성능을 향상시킬 수 있음
+- BufferedInputStream, BufferedReader
+- BufferedOutputStream, BufferedWriter
+
+### 18.5.3 기본 타입 입출력 보조 스트림
+- 바이트 스트림은 바이트 단위로 입출력하기 때문에 보조 스트림인 DataInputStream과 DataOutputStream을 연결해 기본 데이터 타입으로 입출력이 가능함
+- 데이터 타입의 크기가 모두 다르므로 읽어올 때는 출력한 순서와 동일하게 읽어와야 함
+
+### 18.5.4 프린터 보조 스트림
+- PrintStream, PrintWriter
+- 프린터와 유사하게 출력하는 print(), println() 메소드를 가지고 있음
+- System.out이 바로 PrintStream 타입이기 때문에 print(), println() 메소드를 사용할 수 있음
+
+### 18.5.5 객체 입출력 보조 스트림
+- 자바는 메모리에 생성된 객체를 파일 또는 네트워크로 출력할 수 있음
+- 객체는 문자가 아니기 때문에 바이트 기반 스트림으로 출력해야 함
+- 객체 직렬화(serialization) : 객체의 데이터(필드값)를 일렬로 늘어선 연속적인 바이트로 변경
+- 역직렬화(deserialization) : 입력스트림으로부터 읽어들인 연속적인 바이트를 객체로 복원
+
+```java
+import java.io.*;
+
+public class ObjectInputOutputStreamExample {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        FileOutputStream fos = new FileOutputStream("C:/Temp/Object.dat");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        
+        oos.writeObject(10);
+        oos.writeObject(3.14);
+        oos.writeObject(new int[]{1, 2, 3});
+        oos.writeObject("홍길동");
+
+        oos.flush();
+        oos.close();
+        fos.close();
+
+        FileInputStream fis = new FileInputStream("C:/Temp/Object.dat");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+
+        Integer obj1 = (Integer) ois.readObject();
+        Double obj2 = (Double) ois.readObject();
+        int[] obj3 = (int []) ois.readObject();
+        String obj4 = (String) ois.readObject();
+
+        ois.close();
+        fis.close();
+
+        System.out.println(obj1);
+        System.out.println(obj2);
+        System.out.println(obj3[0] + ", " + obj3[1] + ", " + obj3[2]);
+        System.out.println(obj4);
+    }
+}
+
+/*
+10
+3.14
+1, 2, 3
+홍길동
+*/
+```
+
+#### 직렬화가 가능한 클래스(Serializable)
+- 자바는 Serializable 인터페이스를 구현한 클래스만 직렬화할 수 있도록 제한함
+- Serializable 인터페이스는 필드나 메소드가 없는 빈 인터페이스이지만, 객체를 직렬화할 때 private 필드를 포함한 모든 필드를 바이트로 변환해도 좋다는 표시 역할을 함
+- 생성자와 메소드, static 또는 transient가 붙어있는 필드는 직렬화가 되지 않음
+
+#### serialVersionUID 필드
+- 직렬화된 객체를 역직렬화할 때는 둘 모두 같은 클래스를 사용해야 함
+- 클래스의 이름이 같더라도 내용이 변경되면 역직렬화는 실패하며 예외가 발생함
+- serialVersionUID : 같은 클래스임을 알려주는 식별자 역할을 함
+  - Serializable 인터페이스를 구현한 클래스를 컴파일하면 자동으로 정적 필드로 추가됨
+- 불가피하게 클래스의 수정이 필요하다면 serialVersionUID를 명시적으로 선언하면 됨
+- 자바는 bin 폴더에서 serialVersionUID 값을 자동으로 생성시켜주는 serialver.exe 명령어를 제공함
+
+#### writeObject()와 readObject() 메소드
+- 자식 클래스에서 Serializable 인터페이스를 구현하면 부모의 필드는 직렬화에서 제외됨
+  - 이 경우 부모 클래스의 필드를 직렬화하고 싶다면 아래 두 가지 방법 중 선택해야 함
+    - 부모 클래스가 Serializable 인터페이스를 구현하도록 한다
+    - 자식 클래스에서 writeObject()와 readObject() 메소드를 선언해서 부모 객체의 필드를 직접 출력시킨다
+- 두 메소드는 각각 직렬화, 역직렬화 할 때 자동으로 호출됨
+  - 반드시 private를 붙여줘야 함
+- defaultWriteObject()와 defaultReadObject()는 자식 클래스에 정의된 필드들을 모두 직렬화하고 역직렬화함
+
+```java
+public class Parent {
+    public String field1;
+}
+```
+
+```java
+import java.io.*;
+
+public class Child extends Parent implements Serializable {
+    public String field2;
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeUTF(field1);
+        out.defaultWriteObject();
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        field1 = in.readUTF();
+        in.defaultReadObject();
+    }
+}
+```
