@@ -5243,3 +5243,53 @@ public class Child extends Parent implements Serializable {
     }
 }
 ```
+
+
+## 18.6 네트워크 기초
+- 네트워크(netwrok) : 여러 대의 컴퓨터를 통신 회선으로 연결한 것
+- 인터넷(internet) : 지역 네트워크를 통신 회선으로 연결한 것
+
+### 18.6.1 서버와 클라이언트
+- 서버(server) 
+  - 클라이언트의 연결을 수락하여 서비스를 제공함
+  - 클라이언트가 요청(request)하는 내용을 처리해주고, 응답(response)을 클라이언트로 보냄
+- 클라이언트(client)
+  - 서비스를 받기 위해 서버에 연결을 요청함
+- P2P 모델에서는 먼저 접속을 시도한 컴퓨터가 클라이언트가 됨
+
+### 18.6.2 IP 주소와 포트(Port)
+- IP(Internet Protocol) 주소
+  - 컴퓨터의 고유한 주소
+  - 네트워크 어댑터(랜(Lan) 카드)마다 할당됨
+  - 한 개의 컴퓨터에 두 개의 네트워크 어댑터가 장착되어 있으면 두 개의 IP 주소를 할당할 수 있음
+- DNS(Domain Name System)을 이용해서 연결할 컴퓨터의 IP 주소를 찾을 수 있음
+- 한 대의 컴퓨터에는 다양한 서버 프로그램들이 실행될 수 있음
+  - 컴퓨터 내에서 실행되는 서버를 선택하기 위해서 추가적인 정보, **포트(port) 번호**가 필요함
+  - 서버는 시작할 때 고정적인 포트 번호를 가지고 실행됨(포트 바인딩(binding))
+- 클라이언트도 서버에서 보낸 정보를 받기 위해 운영체제에서 자동으로 부여하는 동적 포트 번호를 사용함
+
+### 18.6.3 InetAddress로 IP 주소 얻기
+- 자바에서 InetAddress로 로컬 컴퓨터의 IP 주소 뿐만 아니라 도메인 이름을 DNS에서 검색한 후 IP 주소를 가져오는 기능을 제공함
+- 연결 클라이언트가 많은 회사의 경우 서버의 과부하를 막기 위해 하나의 도메인 이름에 여러 개의 컴퓨터 IP를 등록하여 운영함
+  - 모든 IP 주소를 얻고 싶다면 getAllByName() 메소드를 호출하면 됨
+
+```java
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+public class InetAddressExample {
+    public static void main(String[] args) {
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            System.out.println("내 컴퓨터 IP 주소 : " + local.getHostAddress());
+
+            InetAddress[] iaArr = InetAddress.getAllByName("www.naver.com");
+            for (InetAddress remote : iaArr) {
+                System.out.println("www.naver.com IP 주소 : " + remote.getHostAddress());
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
