@@ -5293,3 +5293,87 @@ public class InetAddressExample {
     }
 }
 ```
+
+
+## 18.7 TCP 네트워킹
+- 연결 지향적 프로토콜 : 클라이언트와 서버가 연결된 상태에서 데이터를 주고받는 프로토콜
+- TCP(Transmission Control Protocol)
+  - 연결 지향적 프로토콜임
+  - 데이터를 정확하고 안정적으로 전달함
+  - 단점
+    - 데이터를 보내기 전에 반드시 연결이 형성되어야 함(가장 시간이 많이 걸리는 작업임)
+    - 고정된 통신 선로가 최단선(네트워크 길이 측면)이 아닐 경우 상대적으로 UDP보다 데이터 전송 속도가 느릴 수 있음
+
+### 18.7.1 ServerSocket과 Socket의 용도
+- TCP 서버의 역할
+  - 클라이언트가 연결 요청을 해오면 연결을 수락(java.net.ServerSocekt)
+  - 연결된 클라이언트와 통신(java.net.Socket)
+- 바인딩(binding) 포트 : 클라이언트가 접속할 포트
+
+### 18.7.2 ServerSocket 생성과 연결 수락
+- 클라이언트 연결 수락을 위해 accept() 메소드를 실행해야 함
+- accept() 메소드는 클라이언트가 연결 요청하기 전까지 블로킹됨
+  - 연결 요청이 들어오면 클라이언트와 통신할 Socket을 만들고 리턴함
+- accept()에서 블로킹 되어있을 때 close() 메소드를 호출하면 SocketException이 발생함
+
+```java
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class ServerExample {
+    public static void main(String[] args) {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket();
+            serverSocket.bind(new InetSocketAddress("localhost", 5001));
+
+            while (true) {
+                System.out.println("[연결 기다림]");
+                Socket socket = serverSocket.accept();
+                InetSocketAddress isa = (InetSocketAddress) socket.getRemoteSocketAddress();
+                System.out.println("[연결 수락함] " + isa.getHostName());
+            }
+        } catch (Exception e) {}
+
+        if (!serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {}
+        }
+    }
+}
+```
+
+### 18.7.3 Socket 생성과 연결 요청
+- connect() 메소드로 연결 요청을 할 수 있음
+- 연결 요청을 할 때의 예외처리
+  - UnknownHostException : 잘못 표기된 IP 주소를 입력했을 경우에 발생
+  - IOException : 주어진 포트로 접속할 수 없을 때 발생
+- connect() 메소드는 서버와 연결이 될 때까지 블로킹됨
+
+```java
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+public class ClientExample {
+    public static void main(String[] args) {
+        Socket socket = null;
+
+        try {
+            socket = new Socket();
+            System.out.println("[연결 요청]");
+            socket.connect(new InetSocketAddress("localhost", 5001));
+            System.out.println("[연결 성공]");
+        } catch (Exception e) {}
+
+        if (!socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {}
+        }
+    }
+}
+```
