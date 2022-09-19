@@ -5377,3 +5377,133 @@ public class ClientExample {
     }
 }
 ```
+
+### 18.7.4 Socket 데이터 통신
+- 데이터를 받기 위해 InputStream의 read() 메소드를 호출하면 데이터를 받기 전까지 블로킹됨
+  - read() 메소드가 블로킹 해제되고 리턴되는 경우는 다음 세 가지임
+  - 상대방이 정상적으로 데이터를 보냄(읽은 바이트 수 리턴)
+  - 상대방이 정상적으로 Socket의 close()를 호출(-1 리턴)
+  - 상대방이 비정상적으로 종료(IOException 발생)
+  - 어떤 경우던 모두 예외 처리를 해서 Socekt을 닫기 위해 close() 메소드를 호출해야 함
+```java
+try {
+  ...
+  // 상대방이 비정상적으로 종료했을 경우 IOException 발생
+
+  // 상대방이 정사적으로 Socket의 close()를 호출했을 경우
+  if (readByteCount == -1) {
+    throw new IOException();
+  }
+  ...
+} catch (Exception e) {
+  try {
+    socket.close();
+  } catch (Exception e2) {}
+}
+```
+
+- 통신 예제 코드
+```java
+// Server.java
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+
+public class ServerExample {
+    public static void main(String[] args) {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket();
+            serverSocket.bind(new InetSocketAddress("localhost", 5001));
+
+            while (true) {
+                System.out.println("[연결 기다림]");
+                Socket socket = serverSocket.accept();
+                InetSocketAddress isa = (InetSocketAddress) socket.getRemoteSocketAddress();
+                System.out.println("[연결 수락함] " + isa.getHostName());
+
+                byte[] bytes = null;
+                String message = null;
+
+                InputStream is = socket.getInputStream();
+                bytes = new byte[100];
+                int readByteCount = is.read(bytes);
+                message = new String(bytes, 0, readByteCount, StandardCharsets.UTF_8);
+                System.out.println("[데이터 받기 성공] : " + message);
+
+                OutputStream os = socket.getOutputStream();
+                message = "Hello Client";
+                bytes = message.getBytes(StandardCharsets.UTF_8);
+                os.write(bytes);
+                os.flush();
+                System.out.println("[데이터 보내기 성공]");
+
+                is.close();
+                os.close();
+                socket.close();
+            }
+        } catch (Exception e) {}
+
+        if (!serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {}
+        }
+    }
+}
+```
+
+```java
+// Client.java
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+
+public class ClinetExample {
+    public static void main(String[] args) {
+        Socket socket = null;
+
+        try {
+            socket = new Socket();
+            System.out.println("[연결 요청]");
+            socket.connect(new InetSocketAddress("localhost", 5001));
+            System.out.println("[연결 성공]");
+
+            byte[] bytes = null;
+            String message = null;
+
+            OutputStream os = socket.getOutputStream();
+            message = "Hello Server";
+            bytes = message.getBytes(StandardCharsets.UTF_8);
+            os.write(bytes);
+            os.flush();
+            System.out.println("[데이터 보내기 성공]");
+
+            InputStream is = socket.getInputStream();
+            bytes = new byte[100];
+            int readByteCount = is.read(bytes);
+            message = new String(bytes, 0, readByteCount, StandardCharsets.UTF_8);
+            System.out.println("[데이터 받기 성공] : " + message);
+
+
+            is.close();
+            os.close();
+            socket.close();
+        } catch (Exception e) {}
+
+        if (!socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {}
+        }
+    }
+}
+```

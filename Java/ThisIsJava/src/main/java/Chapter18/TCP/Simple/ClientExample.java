@@ -1,4 +1,4 @@
-package Chapter18.TCP.ServerSocket.Client;
+package Chapter18.TCP.Simple;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
