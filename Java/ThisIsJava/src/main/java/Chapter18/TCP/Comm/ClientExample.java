@@ -7,7 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-public class ClinetExample {
+public class ClientExample {
     public static void main(String[] args) {
         Socket socket = null;
 
