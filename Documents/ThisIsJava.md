@@ -5591,3 +5591,51 @@ public class ClinetExample {
 
 ### 19.3.2 Buffer 생성
 
+#### allocate() 메소드
+- JVM 힙 메모리에 넌다이렉트 버퍼를 생성함
+- 매개값은 핻당 데이터 타입의 저장 개수임
+
+```java
+ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+CharBuffer charBuffer = CharBuffer.allocate(100);
+```
+
+#### wrap() 메소드
+- 이미 생성되어 있는 자바 배열을 래핑해서 Buffer 객체를 생성함
+  - 자바 배열은 JVM 힙 메모리에 생성되므로 wrap()은 **넌다이렉트 버퍼**를 생성함
+
+```java
+byte[] byteArray = new byte[100];
+ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+
+// 일부 데이터만 가지고 Buffer 객체를 생성할 수 있음
+byte[] byteArray = new byte[100];
+ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray, 0, 50);
+```
+
+#### allocateDirect() 메소드
+- 운영체제가 관리하는 메모리에 다이렉트 버퍼를 생성함
+- 각 타입별 Buffer 클래스에는 없고, ByteBuffer에서만 제공됨
+  - 타입별로 다이렉트 버퍼를 생성하려면 우선 ByteBuffer의 allocateDirect() 메소드로 버퍼를 생성하고, asCharBuffer(), asShortBuffer() 등을 사용하면 됨
+
+```java
+// 100개의 byte값 저장
+ByteBuffer byteBuffer = ByteBuffer.allocateDirect(100);
+// 50개의 char값 저장
+CharBuffer charBuffer = ByteBuffer.allocateDirect(100).asCharBuffer();
+// 25개의 int값 저장
+IntBuffer intBuffer = ByteBuffer.allocateDirect(100).asIntBuffer();
+```
+
+#### byte 해석 순서(ByteOrder)
+- 데이터를 처리할 때 바이트 처리 순서는 운영체제마다 차이가 있음
+- Big endian : 앞쪽 바이트부터 먼저 처리
+- Little endian : 뒤쪽 바이트부터 먼저 처리
+- JVM은 무조건 Big endian으로 동작하도록 되어있음
+  - 운영체제와 JVM의 바이트 해석 순서가 다를 경우 JVM이 운영체제와 데이터를 교환할 때 자동적으로 처리해줌
+- 다이렉트 버퍼일 경우 운영체제의 native I/O를 사용
+  - 운영체제의 기본 해석 순서로 JVM의 해석 순서를 맞추는 것이 성능에 도움이 됨
+
+```java
+ByteBuffer byteBuffer = ByteBuffer.allocateDirect(100).order(ByteOrder.nativeOrder());
+```
