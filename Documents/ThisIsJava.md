@@ -5639,3 +5639,114 @@ IntBuffer intBuffer = ByteBuffer.allocateDirect(100).asIntBuffer();
 ```java
 ByteBuffer byteBuffer = ByteBuffer.allocateDirect(100).order(ByteOrder.nativeOrder());
 ```
+
+### 19.3.3 Buffer의 위치 속성
+- position : 현재 읽거나 쓰는 위치값(인덱스). 0부터 시작하며 limit보다 큰값을 가질 수 없음
+- limit : 버퍼에서 읽거나 쓸 수 있는 위치의 한계
+- capacity : 버퍼의 최대 데이터 개수(메모리 크기). 인덱스 값이 아닌 수량임
+- mark : reset() 메소드를 실행했을 때 돌아오는 위치를 지정하는 인덱스임. positon 이하의 값으로 지정해주어야 함
+
+### 19.3.4 Buffer 메소드
+- 공통적으로 사용하는 메소드들과 데이터 타입별로 Buffer가 개별적으로 가지고 있는 메소드들이 있음
+- flip()
+  - limit = position
+  - position = 0
+- mark() : mark = position
+- reset() : position = mark
+  - mark가 없는 상태에서 호출하면 예외 발생
+- rewind() : limit은 변하지 않지만 position은 0번 인덱스로 다시 설정됨
+- compact()
+  - position에서 limit 사이의 데이터가 0번 인덱스로 복사되고, 현재 position은 복사된 데이터 다음 위치로 이동함
+  - 나머지 인덱스의 데이터는 삭제되지 않고 남아있음
+  - 읽지 않은 데이터 뒤에 새로운 데이터를 저장하기 위해 사용함
+
+#### 데이터를 읽고 저장하는 메소드
+- put() : 데이터를 저장
+- get() : 데이터를 읽음
+- 위 두 메소드는 상대적(Relative)과 절대적(Absolute)으록 구분됨
+  - index 매개 변수가 없으면 상대적, 있으면 절대적임
+
+#### 버퍼 예외의 종류
+- BufferOverflowException : position이 limit에 도달했을 때 put()을 호출하면 발생
+- BufferUnderflowException : position이 limit에 도달했을 때 get()을 호출하면 발생
+- InvalidMarkException : mark가 없는 상태에서 reset() 메소드를 호출하면 발생
+- ReadOnlyBufferException : 읽기 전용 버퍼에서 put() 또는 compact() 메소드를 호출하면 발생
+
+```java
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+
+public class BufferExample {
+    public static void main(String[] args) {
+        System.out.println("[7바이트 크기로 버퍼 생성]");
+        ByteBuffer buffer = ByteBuffer.allocateDirect(7);
+        printState(buffer);
+
+        buffer.put((byte) 10);
+        buffer.put((byte) 11);
+        System.out.println("[2바이트 저장 후]");
+        printState(buffer);
+
+        buffer.put((byte) 12);
+        buffer.put((byte) 13);
+        buffer.put((byte) 14);
+        System.out.println("[3바이트 저장 후]");
+        printState(buffer);
+
+        buffer.flip();
+        System.out.println("[flip() 실행 후]");
+        printState(buffer);
+
+        buffer.get(new byte[3]);
+        System.out.println("[3바이트 읽은 후]");
+        printState(buffer);
+
+        buffer.mark();
+        System.out.println("-----[현재 위치를 마크 해놓음]");
+
+        buffer.get(new byte[2]);
+        System.out.println("[2바이트 읽은 후]");
+        printState(buffer);
+
+        buffer.reset();
+        System.out.println("-----[position]을 마크 위치로 옮김]");
+        printState(buffer);
+
+        buffer.rewind();
+        System.out.println("[rewind() 실행 후]");
+        printState(buffer);
+
+        buffer.clear();
+        System.out.println("[clear() 실행 후]");
+        printState(buffer);
+    }
+
+    public static void printState(Buffer buffer) {
+        System.out.print("\tposition : " + buffer.position() + ", ");
+        System.out.print("\tlimit : " + buffer.limit() + ", ");
+        System.out.println("\tcapacity : " + buffer.capacity());
+    }
+}
+
+/*
+[7바이트 크기로 버퍼 생성]
+	position : 0, 	limit : 7, 	capacity : 7
+[2바이트 저장 후]
+	position : 2, 	limit : 7, 	capacity : 7
+[3바이트 저장 후]
+	position : 5, 	limit : 7, 	capacity : 7
+[flip() 실행 후]
+	position : 0, 	limit : 5, 	capacity : 7
+[3바이트 읽은 후]
+	position : 3, 	limit : 5, 	capacity : 7
+-----[현재 위치를 마크 해놓음]
+[2바이트 읽은 후]
+	position : 5, 	limit : 5, 	capacity : 7
+-----[position]을 마크 위치로 옮김]
+	position : 3, 	limit : 5, 	capacity : 7
+[rewind() 실행 후]
+	position : 0, 	limit : 5, 	capacity : 7
+[clear() 실행 후]
+	position : 0, 	limit : 7, 	capacity : 7
+*/
+```
