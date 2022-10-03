@@ -5750,3 +5750,63 @@ public class BufferExample {
 	position : 0, 	limit : 7, 	capacity : 7
 */
 ```
+
+### 19.3.5 Buffer 변환
+- 채널이 데이터를 읽고 쓰는 버퍼는 모두 ByteBuffer
+  - 채널을 통해 읽은 데이터를 복원하려면 ByteBuffer를 문자열 또는 다른 타입 버퍼로 변환해야 함
+  - 반대로 데이터를 쓸 때에도 마찬가지
+
+#### ByteBuffer <-> String
+- 특정 문자셋으로 인코딩 또는 디코딩해야 함
+  
+```java
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+public class ByteBufferToStringExample {
+    public static void main(String[] args) {
+        Charset charset = StandardCharsets.UTF_8;
+
+        // 문자열 -> 인코딩 -> ByteBuffer
+        String data = "안녕하세요";
+        ByteBuffer byteBuffer = charset.encode(data);
+        
+        // ByteBuffer -> 디코딩 -> CharBuffer -> 문자열
+        data = charset.decode(byteBuffer).toString();
+        System.out.println("문자열 복원 : " + data);
+    }
+}
+```
+
+#### ByteBuffer <-> IntBuffer
+- int 타입은 4byte 크기를 가짐
+- IntBuffer의 capacity보다 4배 큰 capacity를 가진 ByteBuffer를 생성함
+- putInt() 메소드로 정수값을 하나씩 저장함
+- 모두 저장한 후에는 position을 0으로 되돌려 놓는 flip() 메소드를 호출해야 함
+
+```java
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.Arrays;
+
+public class ByteBufferToIntBufferExample {
+    public static void main(String[] args) {
+        // int[] -> IntBuffer -> ByteBuffer
+        int[] writeData = { 10, 20, 30 };
+        IntBuffer writeIntBuffer = IntBuffer.wrap(writeData);
+        ByteBuffer writeByteBuffer = ByteBuffer.allocate(writeIntBuffer.capacity() * 4);
+        for (int i = 0; i < writeIntBuffer.capacity(); i++) {
+            writeByteBuffer.putInt(writeIntBuffer.get(i));
+        }
+        writeByteBuffer.flip();
+
+        // ByteBuffer -> IntBuffer -> int[]
+        ByteBuffer readByteBuffer = writeByteBuffer;
+        IntBuffer readIntBuffer = readByteBuffer.asIntBuffer();
+        int[] readData = new int[readIntBuffer.capacity()];
+        readIntBuffer.get(readData);
+        System.out.println("배열 복원 : " + Arrays.toString(readData));
+    }
+}
+```
