@@ -5810,3 +5810,113 @@ public class ByteBufferToIntBufferExample {
     }
 }
 ```
+
+
+## 19.4 파일 채널
+- FileChannel은 동기화 처리가 되어 있어 멀티 스레드 환경에서 사용해도 안전함
+
+### 19.4.2 파일 쓰기와 읽기
+- write(ByteBuffer src) : ByteBuffer의 position부터 limit까지 쓰여짐
+- read(ByteBuffer dst) : ByteBuffer의 position부터 저장됨. 더 이상 읽을 바이트가 없다면 -1 리턴
+
+```java
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+public class FileChannelWriteExample {
+    public static void main(String[] args) throws IOException {
+        Path path = Paths.get("C:\\Temp\\file.txt");
+        Files.createDirectories(path.getParent());
+
+        FileChannel fileChannel = FileChannel.open(
+                path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+        String data = "안녕하세요";
+        Charset charset = Charset.defaultCharset();
+        ByteBuffer byteBuffer = charset.encode(data);
+
+        int byteCount = fileChannel.write(byteBuffer);
+        System.out.println("file.txt : " + byteCount + " bytes written");
+
+        fileChannel.close();
+    }
+}
+```
+
+```java
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+public class FileChannelReadExample {
+    public static void main(String[] args) throws IOException {
+        Path path = Paths.get("C:\\Temp\\file.txt");
+
+        FileChannel fileChnnel = FileChannel.open(
+                path, StandardOpenOption.READ);
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+
+        Charset charset = Charset.defaultCharset();
+        String data = "";
+        int byteCount;
+
+        while (true) {
+            byteCount = fileChnnel.read(byteBuffer);
+            if (byteCount == -1) break;
+
+            byteBuffer.flip();
+            data += charset.decode(byteBuffer).toString();
+            byteBuffer.clear();
+        }
+
+        fileChnnel.close();
+    }
+}
+```
+
+### 19.4.3 파일 복사
+- 채널에서 읽고 다시 채널을 쓰는 경우 다이렉트 버퍼가 더 좋은 성능을 냄
+
+```java
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+public class FileCopyExample {
+    public static void main(String[] args) throws IOException {
+        Path from = Paths.get("C:\\Temp\\copy.jpg");
+        Path to = Paths.get("C:\\Temp\\copy2.jpg");
+
+        FileChannel fileChannel_from = FileChannel.open(from, StandardOpenOption.READ);
+        FileChannel fileChannel_to = FileChannel.open(to, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+        ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+        int byteCount;
+        while (true) {
+            buffer.clear();
+            byteCount = fileChannel_from.read(buffer);
+            if (byteCount == -1) break;
+            buffer.flip();
+            fileChannel_to.write(buffer);
+        }
+
+        fileChannel_from.close();
+        fileChannel_to.close();
+        System.out.println("파일 복사 성공");
+    }
+}
+```
