@@ -5920,3 +5920,33 @@ public class FileCopyExample {
     }
 }
 ```
+
+
+## 19.5 파일 비동기 채널
+- FileChannel의 read() 와 write() 메소드는 파일 입출력 작업 동안 블로킹됨
+- 자바 NIO는 불특정 다수의 파일 및 대용량 파일의 입출력 작업을 위해서 비동기 파일 채널(AsynchronousFileChannel)을 별도로 제공함
+- AsynchronousFileChannel
+  - read(), write() 메소드를 호출하면 스레드풀에게 작업 처리를 요청하고 이 메소드들을 즉시 리턴시킴
+  - 실질적인 입출력 작업 처리는 스레드풀의 작업 스레드가 담당함
+  - 파일 입출력을 완료하면 콜백(callback) 메소드가 자동 호출됨
+
+### 19.5.2 파일 읽기와 쓰기
+
+```java
+read(ByteBuffer dst, long position, A attachment, CompletionHandler<Integer, A> handler);
+wriee(ByteBuffer src, long position, A attachment, CompletionHandler<Integer, A> handler);
+```
+
+- attachment 매개값 : 콜백 메소드로 전달할 첨부 객체
+  - 첨부 객체는 콜백 메소드에서 결과값 외에 추가적인 정보를 얻고자 할 때 사용하는 객체임
+- handler 매개값 : CompletionHandler<Integer, A> 구현 객체를 지정함
+  - Integer : 입출력 작업의 결과 타입. read(), write()의 읽거나 쓴 바이트 수
+  - A는 첨부 객체 타입으로 개발자가 임의로 지정이 가능함. 필요없다면 Void가 됨
+  - 정상적으로 완료된 경우와 예외 발생으로 실패한 경우에 자동 콜백되는 메소드를 가지고 있어야 함
+
+```java
+void completed(Integer result, A attachment)
+void failed(Throwable exc, A attachment)
+```
+- 콜백 메소드를 실행하는 스레드는 read()와 write()를 호출한 스레드가 아니고 스레드풀의 작업 스레드임
+  - 때문에 UI 프로그램 같은 경우 Platform.runLater() 등을 이용해야 함
