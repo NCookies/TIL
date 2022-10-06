@@ -5950,3 +5950,12 @@ void failed(Throwable exc, A attachment)
 ```
 - 콜백 메소드를 실행하는 스레드는 read()와 write()를 호출한 스레드가 아니고 스레드풀의 작업 스레드임
   - 때문에 UI 프로그램 같은 경우 Platform.runLater() 등을 이용해야 함
+
+
+## 19.6 TCP 블로킹 채널
+
+### 19.6.1 서버소켓 채널과 소켓 채널의 용도
+- ServerSocketChannel과 SocketChannel 사용
+- 버퍼를 이용하고 블로킹과 넌블로킹 방식을 모두 지원함
+- 기본적으로 블로킹 방식으로 동작함
+
