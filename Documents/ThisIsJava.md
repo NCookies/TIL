@@ -5959,3 +5959,421 @@ void failed(Throwable exc, A attachment)
 - 버퍼를 이용하고 블로킹과 넌블로킹 방식을 모두 지원함
 - 기본적으로 블로킹 방식으로 동작함
 
+```java
+// Server.java
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class Server extends Application {
+    ExecutorService executorService;
+    ServerSocketChannel serverSocketChannel;
+    List<Client> connections = new Vector<Client>();
+
+    TextArea txtDisplay;
+    Button btnStartStop;
+
+    @Override
+    public void start(Stage primaryStage) throws IOException {
+        BorderPane root = new BorderPane();
+        root.setPrefSize(500, 300);
+
+        txtDisplay = new TextArea();
+        txtDisplay.setEditable(false);
+        BorderPane.setMargin(txtDisplay, new Insets(0, 0, 2, 0));
+        root.setCenter(txtDisplay);
+
+        btnStartStop = new Button("start");
+        btnStartStop.setPrefHeight(30);
+        btnStartStop.setMaxWidth(Double.MAX_VALUE);
+
+        btnStartStop.setOnAction(e -> {
+            if (btnStartStop.getText().equals("start")) {
+                startServer();
+            } else if (btnStartStop.getText().equals("stop")) {
+                stopServer();
+            }
+        });
+        root.setBottom(btnStartStop);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("app.css").toString());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Server");
+        primaryStage.setOnCloseRequest(event -> stopServer());
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+
+    void displayText(String text) {
+        txtDisplay.appendText(text + "\n");
+    }
+
+    void startServer() {
+        executorService = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors()
+        );
+
+        try {
+            serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel.configureBlocking(true);
+            serverSocketChannel.bind(new InetSocketAddress(5001));
+        } catch (Exception e) {
+            if (serverSocketChannel.isOpen()) {
+                stopServer();
+            }
+            return;
+        }
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    displayText("[서버 시작]");
+                    btnStartStop.setText("stop");
+                });
+
+                while (true) {
+                    try {
+                        SocketChannel socketChannel = serverSocketChannel.accept();
+                        String message = "[연결 수락 : " + socketChannel.getRemoteAddress() +
+                                " : " + Thread.currentThread().getName() + "]";
+                        Platform.runLater(() -> displayText(message));
+
+                        Client client = new Client(socketChannel);
+                        connections.add(client);
+
+                        Platform.runLater(() -> displayText("[연결 개수 : " + connections.size() + "]"));
+                    } catch (Exception e) {
+                        if (serverSocketChannel.isOpen()) {
+                            stopServer();
+                        }
+                        break;
+                    }
+                }
+            }
+        };
+
+        executorService.submit(runnable);
+    }
+
+    void stopServer() {
+        try {
+            Iterator<Client> iterator = connections.iterator();
+            while (iterator.hasNext()) {
+                Client client = iterator.next();
+                client.socketChannel.close();
+                iterator.remove();
+            }
+
+            if (serverSocketChannel != null && serverSocketChannel.isOpen()) {
+                serverSocketChannel.close();
+            }
+            if (executorService != null && !executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+
+            Platform.runLater(() -> {
+                displayText("[서버 멈춤]");
+                btnStartStop.setText("start");
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    class Client {
+        SocketChannel socketChannel;
+
+        Client(SocketChannel socketChannel) {
+            this.socketChannel = socketChannel;
+            receive();
+        }
+
+        void receive() {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (true) {
+                            ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+                            
+                            // 클라이언트가 비정상 종료를 했을 경우 IOException 발생
+                            int readByteCount = socketChannel.read(byteBuffer);
+
+                            if (readByteCount == -1) {
+                                throw new IOException();
+                            }
+
+                            String message = "[요청 처리 : " + socketChannel.getRemoteAddress() +
+                                    ": " + Thread.currentThread().getName() + "]";
+                            Platform.runLater(() -> displayText(message));
+
+                            byteBuffer.flip();
+                            Charset charset = StandardCharsets.UTF_8;
+                            String data = charset.decode(byteBuffer).toString();
+
+                            for (Client client : connections) {
+                                client.send(data);
+                            }
+                        }
+                    } catch (Exception e) {
+                        try {
+                            connections.remove(Client.this);
+                            String message = "[클라이언트 통신 안됨: " +
+                                    ": " + Thread.currentThread().getName() + "]";
+                            Platform.runLater(() -> displayText(message));
+                            socketChannel.close();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
+                    }
+                }
+            };
+
+            executorService.submit(runnable);
+        }
+
+        void send(String data) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Charset charset = StandardCharsets.UTF_8;
+                        ByteBuffer byteBuffer = charset.encode(data);
+                        socketChannel.write(byteBuffer);
+                    } catch (Exception e) {
+                        try {
+                            String message = "[클라이언트 통신 안됨 : " +
+                                    socketChannel.getRemoteAddress() + ": " +
+                                    Thread.currentThread().getName() + "]";
+                            Platform.runLater(() -> displayText(message));
+                            connections.remove(Client.this);
+                            socketChannel.close();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
+                    }
+                }
+            };
+            executorService.submit(runnable);
+        }
+    }
+}
+```
+
+```java
+// ClientExample.java
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+public class ClientExample extends Application {
+    SocketChannel socketChannel;
+
+    // UI 생성 코드
+    TextArea txtDisplay;
+    TextField txtInput;
+    Button btnConn, btnSend;
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        BorderPane root = new BorderPane();
+        root.setPrefSize(500, 300);
+
+        txtDisplay = new TextArea();
+        txtDisplay.setEditable(false);
+        BorderPane.setMargin(txtDisplay, new Insets(0,0,2,0));
+        root.setCenter(txtDisplay);
+
+        BorderPane bottom = new BorderPane();
+        txtInput = new TextField();
+        txtInput.setPrefSize(60, 30);
+        BorderPane.setMargin(txtInput, new Insets(0,1,1,1));
+
+        btnConn = new Button("start");
+        btnConn.setPrefSize(60, 30);
+        btnConn.setOnAction(e->{
+            if (btnConn.getText().equals("start")) startClient();
+            else if (btnConn.getText().equals("stop")) stopClient();
+        });
+
+        btnSend = new Button("send");
+        btnSend.setPrefSize(60, 30);
+        btnSend.setDisable(true);
+        btnSend.setOnAction(e->send(txtInput.getText()));
+
+        bottom.setCenter(txtInput);
+        bottom.setLeft(btnConn);
+        bottom.setRight(btnSend);
+        root.setBottom(bottom);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("app.css").toString());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Client");
+        primaryStage.setOnCloseRequest(event->stopClient());
+        primaryStage.show();
+    }
+
+    void displayText(String text) {
+        txtDisplay.appendText(text + "\n");
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    void startClient() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    socketChannel = SocketChannel.open();
+                    socketChannel.configureBlocking(true);
+                    socketChannel.connect(new InetSocketAddress("localhost", 5001));
+                    Platform.runLater(() -> {
+                        try {
+                            displayText("[연결 완료 : " + socketChannel.getRemoteAddress() + "]");
+                            btnConn.setText("stop");
+                            btnSend.setDisable(false);
+                        } catch (Exception e) {}
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> displayText("[서버 통신 안됨]"));
+                    if (socketChannel.isOpen()) {
+                        stopClient();
+                    }
+                    return;
+                }
+                receive();
+            }
+        };
+
+        thread.start();
+    }
+
+    void stopClient() {
+        try {
+            Platform.runLater(() -> {
+                displayText("[연결 끊음]");
+                btnConn.setText("start");
+                btnConn.setDisable(true);
+            });
+
+            if (socketChannel != null && socketChannel.isOpen()) {
+                socketChannel.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void receive() {
+        while (true) {
+            try {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+
+                int readByteCount = socketChannel.read(byteBuffer);
+
+                if (readByteCount == -1) {
+                    throw new IOException();
+                }
+
+                byteBuffer.flip();
+                Charset charset = StandardCharsets.UTF_8;
+                String data = charset.decode(byteBuffer).toString();
+
+                Platform.runLater(() -> {
+                    displayText("[받기 완료] " + data);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    displayText("[서버 통신 안됨]");
+                });
+
+                stopClient();
+                break;
+            }
+        }
+    }
+
+    void send(String data) {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Charset charset = StandardCharsets.UTF_8;
+                    ByteBuffer byteBuffer = charset.encode(data);
+                    socketChannel.write(byteBuffer);
+                    Platform.runLater(() -> {
+                        displayText("[보내기 완료]");
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        displayText("[서버 통신 안됨");
+                    });
+                    stopClient();
+                }
+            }
+        };
+        thread.start();
+    }
+}
+```
+
+```java
+// app.css
+
+/* text-area 배경색 */
+.text-area {
+    -fx-background-color: gold;
+}
+
+/* scroll-pane 배경색 */
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* content 배경색 */
+.text-area .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+```
+
