@@ -66,6 +66,7 @@ public class Server extends Application {
                                 Client client = (Client) selectionKey.attachment();
                                 client.receive(selectionKey);
                             } else if (selectionKey.isWritable()) {
+
                                 Client client = (Client) selectionKey.attachment();
                                 client.send(selectionKey);
                             }
