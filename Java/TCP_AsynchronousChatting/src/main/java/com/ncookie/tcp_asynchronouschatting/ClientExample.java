@@ -3,7 +3,6 @@ package com.ncookie.tcp_asynchronouschatting;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.print.PageLayout;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;

@@ -2,12 +2,10 @@ package com.ncookie.tcp_asynchronouschatting;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.Clipboard;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 

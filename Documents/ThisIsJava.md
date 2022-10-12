@@ -6662,3 +6662,384 @@ public class Server extends Application {
 
 ### 19.8.3 비동기 서버소켓 채널
 - accept()를 반복해서 호출하는 무한 루프가 없는 대신, completed() 메소드 끝에 accept()를 재호출해서 반복적으로 클라이언트의 연결 수락 작업을 진행함
+
+```java
+// Server.java
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.Executors;
+
+public class ServerExample extends Application {
+    AsynchronousChannelGroup channelGroup;
+    AsynchronousServerSocketChannel serverSocketChannel;
+    List<Client> connections = new Vector<Client>();
+
+    TextArea txtDisplay;
+    Button btnStartStop;
+
+
+    void startServer() {
+        try {
+            channelGroup = AsynchronousChannelGroup.withFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors(),
+                    Executors.defaultThreadFactory()
+            );
+
+            serverSocketChannel = AsynchronousServerSocketChannel.open(channelGroup);
+            serverSocketChannel.bind(new InetSocketAddress(5001));
+        } catch (Exception e) {
+            if (serverSocketChannel.isOpen()) {
+                stopServer();
+            }
+            return;
+        }
+
+        Platform.runLater(() -> {
+            displayText("[서버 시작]");
+            btnStartStop.setText("stop");
+        });
+
+        serverSocketChannel.accept(null,
+                new CompletionHandler<AsynchronousSocketChannel, Void>() {
+                    @Override
+                    public void completed(AsynchronousSocketChannel socketChannel, Void attachment) {
+                        try {
+                            String message = "[연결 수락 : " + socketChannel.getRemoteAddress() + " : "
+                                    + Thread.currentThread().getName() + "]";
+                            Platform.runLater(() -> displayText(message));
+                        } catch (IOException e) {}
+
+                        Client client = new Client(socketChannel);
+                        connections.add(client);
+                        Platform.runLater(() -> displayText("[연결 개수 : " + connections.size() + "]"));
+
+                        serverSocketChannel.accept(null, this);
+                    }
+
+                    @Override
+                    public void failed(Throwable exc, Void attachment) {
+                        if (serverSocketChannel.isOpen()) {
+                            stopServer();
+                        }
+                    }
+                });
+    }
+
+    void stopServer() {
+        try {
+            connections.clear();
+            if (channelGroup != null && !channelGroup.isShutdown()) {
+                channelGroup.shutdown();
+            }
+            Platform.runLater(() -> {
+                displayText("[서버 멈춤]");
+                btnStartStop.setText("start");
+            });
+        } catch (Exception e) {}
+    }
+
+    class Client {
+        AsynchronousSocketChannel socketChannel;
+
+        Client(AsynchronousSocketChannel socketChannel) {
+            this.socketChannel = socketChannel;
+            receive();
+        }
+
+        void receive() {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+            socketChannel.read(byteBuffer, byteBuffer,
+                    new CompletionHandler<Integer, ByteBuffer>() {
+                        @Override
+                        public void completed(Integer result, ByteBuffer attachment) {
+                            try {
+                                String message = "[요청 처리 : " + socketChannel.getRemoteAddress() + " : " +
+                                        Thread.currentThread().getName() + "]";
+                                Platform.runLater(() -> displayText(message));
+
+                                attachment.flip();
+                                Charset charset = StandardCharsets.UTF_8;
+                                String data = charset.decode(attachment).toString();
+
+                                for (Client client : connections) {
+                                    client.send(data);
+                                }
+
+                                ByteBuffer byteBuffer1 = ByteBuffer.allocate(100);
+                                socketChannel.read(byteBuffer1, byteBuffer1, this);
+                            } catch (Exception e) {}
+                        }
+
+                        @Override
+                        public void failed(Throwable exc, ByteBuffer attachment) {
+                            try {
+                                String message = "[클라이언트 통신 안됨 : " +
+                                        socketChannel.getRemoteAddress() + " : " +
+                                        Thread.currentThread().getName() + "]";
+                                Platform.runLater(() -> displayText(message));
+                                connections.remove(Client.this);
+                                socketChannel.close();
+                            } catch (IOException e) {
+
+                            }
+                        }
+                    });
+        }
+
+        void send(String data) {
+            Charset charset = StandardCharsets.UTF_8;
+            ByteBuffer byteBuffer = charset.encode(data);
+            socketChannel.write(byteBuffer, null,
+                    new CompletionHandler<Integer, Void>() {
+                        @Override
+                        public void completed(Integer result, Void attachment) {
+
+                        }
+
+                        @Override
+                        public void failed(Throwable exc, Void attachment) {
+                            try {
+                                String message = "[클라이언트 통신 안됨 : " +
+                                        socketChannel.getRemoteAddress() + " : " +
+                                        Thread.currentThread().getName() + "]";
+                                Platform.runLater(() -> displayText(message));
+                                connections.remove(Client.this);
+                                socketChannel.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+        }
+
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws IOException {
+        BorderPane root = new BorderPane();
+        root.setPrefSize(500, 300);
+
+        txtDisplay = new TextArea();
+        txtDisplay.setEditable(false);
+        BorderPane.setMargin(txtDisplay, new Insets(0, 0, 2, 0));
+        root.setCenter(txtDisplay);
+
+        btnStartStop = new Button("start");
+        btnStartStop.setPrefHeight(30);
+        btnStartStop.setMaxWidth(Double.MAX_VALUE);
+
+        btnStartStop.setOnAction(e -> {
+            if (btnStartStop.getText().equals("start")) {
+                startServer();
+            } else if (btnStartStop.getText().equals("stop")) {
+                stopServer();
+            }
+        });
+        root.setBottom(btnStartStop);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("app.css").toString());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Server");
+        primaryStage.setOnCloseRequest(event -> stopServer());
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+
+    void displayText(String text) {
+        txtDisplay.appendText(text + "\n");
+    }
+}
+```
+
+```java
+// Client.java
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
+
+public class ClientExample extends Application {
+    AsynchronousChannelGroup channelGroup;
+    AsynchronousSocketChannel socketChannel;
+
+    // UI 생성 코드
+    TextArea txtDisplay;
+    TextField txtInput;
+    Button btnConn, btnSend;
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        BorderPane root = new BorderPane();
+        root.setPrefSize(500, 300);
+
+        txtDisplay = new TextArea();
+        txtDisplay.setEditable(false);
+        BorderPane.setMargin(txtDisplay, new Insets(0,0,2,0));
+        root.setCenter(txtDisplay);
+
+        BorderPane bottom = new BorderPane();
+        txtInput = new TextField();
+        txtInput.setPrefSize(60, 30);
+        BorderPane.setMargin(txtInput, new Insets(0,1,1,1));
+
+        btnConn = new Button("start");
+        btnConn.setPrefSize(60, 30);
+        btnConn.setOnAction(e->{
+            if (btnConn.getText().equals("start")) startClient();
+            else if (btnConn.getText().equals("stop")) stopClient();
+        });
+
+        btnSend = new Button("send");
+        btnSend.setPrefSize(60, 30);
+        btnSend.setDisable(true);
+        btnSend.setOnAction(e->send(txtInput.getText()));
+
+        bottom.setCenter(txtInput);
+        bottom.setLeft(btnConn);
+        bottom.setRight(btnSend);
+        root.setBottom(bottom);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("app.css").toString());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Client");
+        primaryStage.setOnCloseRequest(event->stopClient());
+        primaryStage.show();
+    }
+
+    void displayText(String text) {
+        txtDisplay.appendText(text + "\n");
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    void startClient() {
+        try {
+            channelGroup = AsynchronousChannelGroup.withFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors(),
+                    Executors.defaultThreadFactory()
+            );
+
+            socketChannel = AsynchronousSocketChannel.open(channelGroup);
+            socketChannel.connect(new InetSocketAddress("localhost", 5001), null,
+                    new CompletionHandler<Void, Void>() {
+                        @Override
+                        public void completed(Void result, Void attachment) {
+                            Platform.runLater(() -> {
+                                try {
+                                    displayText("[연결 완료 : " + socketChannel.getRemoteAddress() + "]");
+                                    btnConn.setText("stop");
+                                    btnSend.setDisable(false);
+                                } catch (Exception e) {}
+                            });
+                            receive();
+                        }
+
+                        @Override
+                        public void failed(Throwable exc, Void attachment) {
+                            Platform.runLater(() -> displayText("[서버 통신 안됨]"));
+                            if (socketChannel.isOpen()) {
+                                stopClient();
+                            }
+                        }
+                    });
+        } catch (IOException e) {}
+    }
+
+    void stopClient() {
+        try {
+            Platform.runLater(() -> {
+                displayText("[연결 끊음]");
+                btnSend.setDisable(true);
+            });
+
+            if (channelGroup != null && !channelGroup.isShutdown()) {
+                channelGroup.shutdownNow();
+            }
+        } catch (IOException e) {}
+    }
+
+    void receive() {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+        socketChannel.read(byteBuffer, byteBuffer,
+                new CompletionHandler<Integer, ByteBuffer>() {
+                    @Override
+                    public void completed(Integer result, ByteBuffer attachment) {
+                        try {
+                            attachment.flip();
+                            Charset charset = StandardCharsets.UTF_8;
+                            String data = charset.decode(attachment).toString();
+                            Platform.runLater(() -> displayText("[받기 완료] " + data));
+
+                            ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+                            socketChannel.read(byteBuffer, byteBuffer, null);
+                        } catch (Exception e) {}
+                    }
+
+                    @Override
+                    public void failed(Throwable exc, ByteBuffer attachment) {
+                        Platform.runLater(() -> displayText("[서버 통신 안됨]"));
+                        stopClient();
+                    }
+                });
+    }
+
+    void send(String data) {
+        Charset charset = StandardCharsets.UTF_8;
+        ByteBuffer byteBuffer = charset.encode(data);
+        socketChannel.write(byteBuffer, null, new CompletionHandler<Integer, Void>() {
+            @Override
+            public void completed(Integer result, Void attachment) {
+                Platform.runLater(() -> displayText("[보내기 완료]"));
+            }
+
+            @Override
+            public void failed(Throwable exc, Void attachment) {
+                Platform.runLater(() -> displayText("[서버 통신 안됨]"));
+                stopClient();
+            }
+        });
+    }
+}
+```
