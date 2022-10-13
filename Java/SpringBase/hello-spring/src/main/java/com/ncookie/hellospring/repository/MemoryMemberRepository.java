@@ -1,6 +1,7 @@
 package com.ncookie.hellospring.repository;
 
 import com.ncookie.hellospring.domain.Member;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 

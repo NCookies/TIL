@@ -3,6 +3,8 @@ package com.ncookie.hellospring.service;
 import com.ncookie.hellospring.domain.Member;
 import com.ncookie.hellospring.repository.MemberRepository;
 import com.ncookie.hellospring.repository.MemoryMemberRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
