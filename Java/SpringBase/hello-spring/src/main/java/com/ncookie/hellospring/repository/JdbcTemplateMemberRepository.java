@@ -55,10 +55,6 @@ public class JdbcTemplateMemberRepository implements MemberRepository {
         return null;
     }
 
-    @Override
-    public void clearStore() {
-
-    }
 
     private RowMapper<Member> memberRowMapper() {
         return (rs, rowNum) -> {

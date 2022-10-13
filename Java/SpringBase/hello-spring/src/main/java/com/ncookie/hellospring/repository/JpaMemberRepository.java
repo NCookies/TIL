@@ -42,8 +42,4 @@ public class JpaMemberRepository implements MemberRepository {
                 .getResultList();
     }
 
-    @Override
-    public void clearStore() {
-
-    }
 }
