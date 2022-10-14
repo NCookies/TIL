@@ -93,3 +93,10 @@
 > ddl-auto
 JPA는 테이블을 자동으로 생성하는 기능을 제공하는데 **none** 를 사용하면 해당 기능을 끈다
 **create** 를 사용하면 엔티티 정보를 바탕으로 테이블도 직접 생성해준다
+
+
+## 섹션 7. AOP
+- AOP : Aspect Oriented Programming
+- 공통 관심 사항(cross-cutting concern)과 핵심 관심 사항(core concern)을 분리할 수 있음
+- Ex) 메소드마다 수행 시간 측정 코드를 따로 분리할 수 있음
+- 핵심 관심 사항(비즈니스 로직)을 깔끔하게 유지할 수 있고 원하는 적용 대상을 선택할 수 있음

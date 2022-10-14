@@ -2,9 +2,6 @@ package com.ncookie.hellospring.service;
 
 import com.ncookie.hellospring.domain.Member;
 import com.ncookie.hellospring.repository.MemberRepository;
-import com.ncookie.hellospring.repository.MemoryMemberRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +19,7 @@ class MemberServiceIntegrationTest {
 
 
     @Test
-    void join() {
+    void 회원가입() {
         // given
         Member member = new Member();
         member.setName("spring");
