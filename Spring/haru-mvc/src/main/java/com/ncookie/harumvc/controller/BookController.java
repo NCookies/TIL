@@ -4,10 +4,13 @@ import com.ncookie.harumvc.domain.Book;
 import com.ncookie.harumvc.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Map;
 
 @Controller
 public class BookController {
@@ -43,5 +46,14 @@ public class BookController {
         }
 
         return mav;
+    }
+
+    @RequestMapping(value = "detail", method = RequestMethod.GET)
+    public String bookDetail(@RequestParam(value = "bookId") String id, Model model) {
+        Book book = bookService.findOne(Long.parseLong(id)).get();
+
+        model.addAttribute("book", book);
+
+        return "book/detail";
     }
 }

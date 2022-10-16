@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -22,5 +23,9 @@ public class BookService {
     public long create(Book book) {
         repository.insert(book);
         return book.getBook_id();
+    }
+
+    public Optional<Book> findOne(Long bookId) {
+        return repository.findById(bookId);
     }
 }
