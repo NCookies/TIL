@@ -24,9 +24,12 @@ public class BookController {
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ModelAndView createPost(@RequestParam BookForm bookForm) {
+    public ModelAndView createPost(BookForm bookForm) {
         ModelAndView mav = new ModelAndView();
         Book book = new Book();
+
+        System.out.println(bookForm.toString());
+
         book.setTitle(bookForm.getTitle());
         book.setCategory(bookForm.getCategory());
         book.setPrice(bookForm.getPrice());

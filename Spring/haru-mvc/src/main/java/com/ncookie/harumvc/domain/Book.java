@@ -1,14 +1,14 @@
 package com.ncookie.harumvc.domain;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners({AuditingEntityListener.class})
 public class Book {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -8,6 +8,11 @@ public class BookForm {
 
     private int price;
 
+    @Override
+    public String toString() {
+        return "BookFrom : " + title + category + price;
+    }
+
     public String getTitle() {
         return title;
     }
