@@ -98,9 +98,15 @@ public class BookController {
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public String selectList(Model model) {
-        List<Book> books = bookService.findAll();
-        model.addAttribute("books", books);
+    public String selectList(@RequestParam(value = "keyword") Optional<String> keyword, Model model) {
+        if (keyword.isPresent()) {
+            List<Book> books = bookService.findByKeyword(keyword.get());
+            model.addAttribute("books", books);
+            model.addAttribute("keyword", keyword.get());
+        } else {
+            List<Book> books = bookService.findAll();
+            model.addAttribute("books", books);
+        }
 
         return "book/list";
     }

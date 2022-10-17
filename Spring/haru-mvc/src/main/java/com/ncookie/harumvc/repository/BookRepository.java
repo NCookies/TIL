@@ -4,6 +4,7 @@ import com.ncookie.harumvc.domain.Book;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,16 @@ public class BookRepository {
     public List<Book> findAll() {
         return em.createQuery("select m from Book m", Book.class)
                 .getResultList();
+    }
+
+    public List<Book> findByKeyword(String keyword) {
+//        String sql = ;
+//                " or m.category like concat('%', :" + keyword + ", '%')";
+        TypedQuery<Book> query = em.createQuery("select m from Book m where m.title like concat('%', :keyword, '%')" +
+                "or m.category like concat('%', :keyword, '%')", Book.class);
+        query.setParameter("keyword", keyword);
+
+        return query.getResultList();
     }
 
     public void remove(Long id) {

@@ -33,6 +33,10 @@ public class BookService {
         return repository.findAll();
     }
 
+    public List<Book> findByKeyword(String keyword) {
+        return repository.findByKeyword(keyword);
+    }
+
     public void delete(Long bookId) {
         repository.remove(bookId);
     }
