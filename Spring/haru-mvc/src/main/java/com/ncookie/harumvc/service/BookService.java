@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -20,8 +19,8 @@ public class BookService {
         this.repository = repository;
     }
 
-    public long create(Book book) {
-        repository.insert(book);
+    public long save(Book book) {
+        repository.save(book);
         return book.getBook_id();
     }
 

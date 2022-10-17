@@ -4,7 +4,6 @@ import com.ncookie.harumvc.domain.Book;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -16,7 +15,7 @@ public class BookRepository {
         this.em = em;
     }
 
-    public Book insert(Book book) {
+    public Book save(Book book) {
         em.persist(book);
         return book;
     }

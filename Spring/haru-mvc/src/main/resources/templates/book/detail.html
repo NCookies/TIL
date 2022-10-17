@@ -11,7 +11,7 @@
 <p th:text="'입력일 : ' + ${book.insert_date}">입력날짜</p>
 
 <p>
-  <a href="/update?bookId=${bookId}">수정</a>
+  <a th:href="'/update?bookId=' + ${book.book_id}">수정</a>
 </p>
 <form method="POST" action="/delete">
   <input type="hidden" name="bookId" value="${bookId}" />

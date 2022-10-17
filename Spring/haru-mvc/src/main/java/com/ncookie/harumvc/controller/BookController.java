@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class BookController {
@@ -37,7 +37,7 @@ public class BookController {
         book.setCategory(bookForm.getCategory());
         book.setPrice(bookForm.getPrice());
 
-        long bookId = this.bookService.create(book);
+        long bookId = this.bookService.save(book);
 
         if (bookId == 0) {
             mav.setViewName("redirect:/create");
@@ -50,10 +50,42 @@ public class BookController {
 
     @RequestMapping(value = "detail", method = RequestMethod.GET)
     public String bookDetail(@RequestParam(value = "bookId") String id, Model model) {
-        Book book = bookService.findOne(Long.parseLong(id)).get();
+        Book book = null;
+
+        Optional<Book> oBook = bookService.findOne(Long.parseLong(id));
+        if (oBook.isPresent()) {
+            book = oBook.get();
+        }
 
         model.addAttribute("book", book);
 
         return "book/detail";
+    }
+
+    @RequestMapping(value = "/update", method = RequestMethod.GET)
+    public String update(@RequestParam(value = "bookId") String id, Model model) {
+        Optional<Book> oBook = bookService.findOne(Long.parseLong(id));
+        if (oBook.isPresent()) {
+            Book book = oBook.get();
+            model.addAttribute(book);
+        }
+
+        return "book/update";
+    }
+
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public String updateBook(@RequestParam(value = "bookId") String id, BookForm bookForm) {
+        Optional<Book> oBook = bookService.findOne(Long.parseLong(id));
+        if (oBook.isPresent()) {
+            Book book = oBook.get();
+
+            book.setTitle(bookForm.getTitle());
+            book.setCategory(bookForm.getCategory());
+            book.setPrice(bookForm.getPrice());
+
+            long bookId = this.bookService.save(book);
+        }
+
+        return "redirect:/detail?bookId=" + id;
     }
 }
