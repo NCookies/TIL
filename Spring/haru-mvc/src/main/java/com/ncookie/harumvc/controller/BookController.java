@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -94,5 +95,13 @@ public class BookController {
         bookService.delete(Long.parseLong(id));
 
         return "redirect:/list";
+    }
+
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public String selectList(Model model) {
+        List<Book> books = bookService.findAll();
+        model.addAttribute("books", books);
+
+        return "book/list";
     }
 }

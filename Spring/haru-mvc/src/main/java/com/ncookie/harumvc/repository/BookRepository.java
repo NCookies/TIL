@@ -4,6 +4,7 @@ import com.ncookie.harumvc.domain.Book;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,6 +24,11 @@ public class BookRepository {
     public Optional<Book> findById(Long id) {
         Book book = em.find(Book.class, id);
         return Optional.ofNullable(book);
+    }
+
+    public List<Book> findAll() {
+        return em.createQuery("select m from Book m", Book.class)
+                .getResultList();
     }
 
     public void remove(Long id) {

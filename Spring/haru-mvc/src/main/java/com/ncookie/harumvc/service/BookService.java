@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,6 +27,10 @@ public class BookService {
 
     public Optional<Book> findOne(Long bookId) {
         return repository.findById(bookId);
+    }
+
+    public List<Book> findAll() {
+        return repository.findAll();
     }
 
     public void delete(Long bookId) {
