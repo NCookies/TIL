@@ -14,7 +14,7 @@
   <a th:href="'/update?bookId=' + ${book.book_id}">수정</a>
 </p>
 <form method="POST" action="/delete">
-  <input type="hidden" name="bookId" value="${bookId}" />
+  <input type="hidden" name="bookId" th:value="${book.book_id}" />
   <input type="submit" value="삭제" />
 </form>
 <p>

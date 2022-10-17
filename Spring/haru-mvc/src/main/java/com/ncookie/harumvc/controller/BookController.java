@@ -88,4 +88,11 @@ public class BookController {
 
         return "redirect:/detail?bookId=" + id;
     }
+
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public String deletePost(@RequestParam(value = "bookId") String id) {
+        bookService.delete(Long.parseLong(id));
+
+        return "redirect:/list";
+    }
 }

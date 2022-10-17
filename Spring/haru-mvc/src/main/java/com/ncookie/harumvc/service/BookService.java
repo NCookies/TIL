@@ -27,4 +27,8 @@ public class BookService {
     public Optional<Book> findOne(Long bookId) {
         return repository.findById(bookId);
     }
+
+    public void delete(Long bookId) {
+        repository.remove(bookId);
+    }
 }

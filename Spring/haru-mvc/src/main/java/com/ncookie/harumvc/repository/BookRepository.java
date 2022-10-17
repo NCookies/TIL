@@ -24,4 +24,9 @@ public class BookRepository {
         Book book = em.find(Book.class, id);
         return Optional.ofNullable(book);
     }
+
+    public void remove(Long id) {
+        Optional<Book> oBook = findById(id);
+        oBook.ifPresent(em::remove);
+    }
 }
