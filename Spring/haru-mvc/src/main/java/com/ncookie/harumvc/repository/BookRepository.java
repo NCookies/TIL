@@ -33,13 +33,16 @@ public class BookRepository {
     }
 
     public List<Book> findByKeyword(String keyword) {
-//        String sql = ;
-//                " or m.category like concat('%', :" + keyword + ", '%')";
-        TypedQuery<Book> query = em.createQuery("select m from Book m where m.title like concat('%', :keyword, '%')" +
-                "or m.category like concat('%', :keyword, '%')", Book.class);
-        query.setParameter("keyword", keyword);
+//        TypedQuery<Book> query = em.createQuery("select m from Book m where m.title like concat('%', :keyword, '%')" +
+//                "or m.category like concat('%', :keyword, '%')", Book.class);
+//        query.setParameter("keyword", keyword);
+//
+//        return query.getResultList();
 
-        return query.getResultList();
+        return em.createQuery("select m from Book m where m.title like concat('%', :keyword, '%')" +
+                "or m.category like concat('%', :keyword, '%')", Book.class)
+                .setParameter("keyword", keyword)
+                .getResultList();
     }
 
     public void remove(Long id) {
