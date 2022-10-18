@@ -59,4 +59,5 @@ public List<Book> findByKeyword(String keyword) {
 
 
 ## 5. 참고
+[JPA, Hibernate, 그리고 Spring Data JPA의 차이점](https://suhwan.dev/2019/02/24/jpa-vs-hibernate-vs-spring-data-jpa/)
 [[Spring JPA] JPQL ( Java Persistence Query Language )](https://victorydntmd.tistory.com/m/205)

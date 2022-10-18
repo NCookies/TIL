@@ -131,4 +131,4 @@ IDs are [1,2,3]
 
 
 ## 5. 참고
-#### [Spring @RequestParam Annotation](https://www.baeldung.com/spring-request-param)
+[Spring @RequestParam Annotation](https://www.baeldung.com/spring-request-param)
