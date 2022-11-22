@@ -1,4 +1,5 @@
-자세한 내용은 다음 **[링크 참고](https://dev-coco.tistory.com/86)**
+#### [사용 방법](https://dev-coco.tistory.com/86)
+#### [주의 사항](https://www.popit.kr/%EC%8B%A4%EB%AC%B4%EC%97%90%EC%84%9C-lombok-%EC%82%AC%EC%9A%A9%EB%B2%95/)
 
 ## lombok 이란?
 - Lombok은 Java 기반에서 기계적으로 작성하는 VO, DTO, Entity 관련 작업을 쉽게 할 수 있게 해주는 라이브러리
