@@ -114,4 +114,5 @@ public class SecurityConfig {
 
 # Reference
 - [[Spring Security] 기본 동작 구조 이해하기](https://velog.io/@seongwon97/security)
-- [Spring Security without the WebSecurityConfigurerAdapter](https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter)
+- [Spring Security without the WebSecurityConfigurerAdapter](https://spring.io/blog/202
+- 2/02/21/spring-security-without-the-websecurityconfigureradapter)
