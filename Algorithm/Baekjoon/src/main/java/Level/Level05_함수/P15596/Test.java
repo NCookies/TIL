@@ -1,4 +1,4 @@
-package Level.Level05.P15596;
+package Level.Level05_함수.P15596;
 
 public class Test {
     long sum(int[] a) {
