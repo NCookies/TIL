@@ -28,7 +28,11 @@ public class Main {
     }
 
     public static boolean isPrime(int num) {
-        // 어떤 수의 약수는 그 수의 제곱근까지만 확인하면 됨
+        // 어떤 수가 소수인지 판별하기 위해서는 그 수의 제곱근까지만 나누어보면 됨
+        if (num == 1) {
+            return false;
+        }
+
         for (int divisor = 2; divisor <= Math.sqrt(num); divisor++) {
             if (num % divisor == 0) {
                 return false;
