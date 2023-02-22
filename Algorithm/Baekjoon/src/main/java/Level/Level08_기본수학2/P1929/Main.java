@@ -14,26 +14,27 @@ public class Main {
         int m = Integer.parseInt(st.nextToken());
         int n = Integer.parseInt(st.nextToken());
 
-        for (int i = m; i <= n; i++) {
-            if (isPrime(i)) {
-                sb.append(i).append("\n");
+        boolean[] prime = new boolean[n + 1];
+
+        prime[0] = true;
+        prime[1] = true;
+
+        for (int i = 2; i <= Math.sqrt(n); i++) {
+            if (prime[i]) {
+                continue;
+            }
+
+            for (int j = i * 2; j <= n; j += i) {
+                prime[j] = true;
+            }
+        }
+
+        for (int k = m; k <= n; k++) {
+            if (!prime[k]) {
+                sb.append(k).append('\n');
             }
         }
 
         System.out.println(sb);
-    }
-
-    public static boolean isPrime(int num) {
-        if (num == 1) {
-            return false;
-        }
-
-        for (int divisor = 2; divisor <= Math.sqrt(num); divisor++) {
-            if (num % divisor == 0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
