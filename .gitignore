@@ -79,6 +79,3 @@ fabric.properties
 
 # h2 DB
 Java/SpringBase/h2/
-
-
-bin/
