@@ -1,4 +1,4 @@
-package Level.Level06_문자열.P2941;
+package Level.Level05_문자열.P2941;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package Level.Level06_문자열.P2908;
+package Level.Level05_문자열.P2908;
 
 import java.io.IOException;
 

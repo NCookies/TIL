@@ -1,4 +1,4 @@
-package Level.Level06_문자열.P1152;
+package Level.Level05_문자열.P1152;
 
 import java.io.IOException;
 

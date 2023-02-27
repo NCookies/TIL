@@ -1,4 +1,4 @@
-package Level.Level06_문자열.P11720;
+package Level.Level05_문자열.P10809;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,13 +7,13 @@ import java.io.InputStreamReader;
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int n = Integer.parseInt(br.readLine());
+        StringBuilder sb = new StringBuilder();
 
-        int sum = 0;
-        for (String s : br.readLine().split("")) {
-            sum += Integer.parseInt(s);
+        String word = br.readLine();
+        for (int i = 97; i <= 122; i++) {
+            sb.append(word.indexOf((char) i)).append(' ');
         }
 
-        System.out.println(sum);
+        System.out.println(sb);
     }
 }
