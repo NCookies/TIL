@@ -16,19 +16,18 @@ public class Main {
 
         int[][] arr = new int[n][m];
         StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n * 2; i++) {
+            st = new StringTokenizer(br.readLine());
+            for (int j = 0; j < m; j++) {
+                arr[i % n][j] += Integer.parseInt(st.nextToken());
+                if (i >= n) {
+                    sb.append(arr[i % n][j]).append(' ');
+                }
+            }
 
-        for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            for (int j = 0; j < m; j++) {
-                arr[i][j] = Integer.parseInt(st.nextToken());
+            if (i >= n) {
+                sb.append('\n');
             }
-        }
-        for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            for (int j = 0; j < m; j++) {
-                sb.append(arr[i][j] + Integer.parseInt(st.nextToken())).append(' ');
-            }
-            sb.append('\n');
         }
 
         System.out.println(sb);
