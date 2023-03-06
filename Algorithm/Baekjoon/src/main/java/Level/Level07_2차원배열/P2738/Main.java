@@ -1,4 +1,4 @@
-package Level.P2738;
+package Level.Level07_2차원배열.P2738;
 
 import java.io.BufferedReader;
 import java.io.IOException;
