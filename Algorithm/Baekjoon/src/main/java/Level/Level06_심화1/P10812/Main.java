@@ -1,4 +1,4 @@
-package Level.P10812;
+package Level.Level06_심화1.P10812;
 
 import java.io.BufferedReader;
 import java.io.IOException;

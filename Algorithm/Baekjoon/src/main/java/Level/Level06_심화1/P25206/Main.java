@@ -1,4 +1,4 @@
-package Level.P25206;
+package Level.Level06_심화1.P25206;
 
 import java.io.BufferedReader;
 import java.io.IOException;

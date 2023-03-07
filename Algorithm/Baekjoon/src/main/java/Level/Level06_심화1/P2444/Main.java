@@ -1,4 +1,4 @@
-package Level.P2444;
+package Level.Level06_심화1.P2444;
 
 import java.io.BufferedReader;
 import java.io.IOException;
