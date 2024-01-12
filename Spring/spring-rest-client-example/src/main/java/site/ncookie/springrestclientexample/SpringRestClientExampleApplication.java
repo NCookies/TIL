@@ -25,6 +25,7 @@ public class SpringRestClientExampleApplication {
             RestTemplate rt = new RestTemplate();
             Map<String, Map<String, Double>> res =
                     rt.getForObject("https://open.er-api.com/v6/latest", Map.class);
+            System.out.println(rt.getForObject("https://open.er-api.com/v6/latest", Map.class));
             System.out.println(res.get("rates").get("KRW"));
 
             // WebClient (Reactive 프로그래밍 방식)
