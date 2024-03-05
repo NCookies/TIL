@@ -8,4 +8,4 @@
 
 ## CS
 
-- [그림으로 이해하는 네트워크 구조와 기술](./Network/Start/README.md)
+- [그림으로 이해하는 네트워크 구조와 기술](./CS/Network/Start/README.md)
