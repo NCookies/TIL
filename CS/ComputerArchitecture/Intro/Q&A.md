@@ -276,3 +276,26 @@ int main() {
 - [캐시 메모리의 참조 지역성(Locality of Reference)과 코드 최적화(Partitioning, Inlining, Alignment)](https://blog.naver.com/techref/222251293739)
 - [[C언어/C++] 인라인(inline) 함수 사용법 & 예제](https://coding-factory.tistory.com/694#:~:text=%EC%9D%B8%EB%9D%BC%EC%9D%B8%20%ED%95%A8%EC%88%98%EB%9E%80%3F%20%EC%9D%B8%EB%9D%BC%EC%9D%B8%20%ED%95%A8%EC%88%98%EB%8A%94%20%EC%A0%95%EC%9D%98%ED%95%9C%20%EC%BD%94%EB%93%9C%EB%93%A4%EC%9D%B4%20%EC%9D%B8%EB%9D%BC%EC%9D%B8%20%ED%95%A8%EC%88%98,%EC%95%84%EB%8B%88%EB%9D%BC%2C%20%ED%98%B8%EC%B6%9C%ED%95%98%EB%8A%94%20%EC%BD%94%EB%93%9C%20%EC%9E%90%EC%B2%B4%EA%B0%80%20%ED%95%A8%EC%88%98%20%EB%82%B4%EC%9A%A9%EC%9D%98%20%EC%BD%94%EB%93%9C%EA%B0%80%20%EB%90%A9%EB%8B%88%EB%8B%A4.)
 - [캐시가 동작하는 아주 구체적인 원리](https://parksb.github.io/article/29.html)
+
+--- 
+
+> 출제일 : 2024/03/20 (DAY5)
+
+## DMA 종류 중 하나로 채널 방식이라는 것이 있다. 이는 DMA에 비해 어떤 이점이 있을까?
+
+![Alt text](image-20.png)
+
+`DMAC(DMA Controller)`의 경우 CPU는 모든 단일 IO 작업을 시작하는데 관여한다. DMA 방식은 Programmed I/O, 인터럽트 기반 I/O보다 우수하지만 CPU에서 간단한 시작 명령으로 전체 I/O를 처리하는 설계 방법이 있으면 전체 시스템 성능을 향상시킬 수 있다. `IOP(I/O Processor)` 설계는 이 요구 사항을 지원한다.
+
+IOP는 I/O 작업의 DMA 개념을 확장한 것이다. IOP는 자체 메모리가 있으며 I/O 명령을 해석하고 실행할 수 있다. 이러한 명령어는 주기억장치에서 가져온다. 데이터 전송은 메모리를 통해 직접 발생한다. 즉, *IOP는 CPU에서 최소한의 시작 명령만으로 IO 작업을 상당 부분 제어할 수 있다.*
+
+### 채널 통신 종류
+
+- Selecter Channel : 각 Channel에 고정적으로 연결되어 사용하며, Disk Driver와 같이 고속의 전송에 사용된다.
+- Multiplexer Channel : 각 Channel에 연결된 장치를  정해진 시간 마다 1개씩 할당하여 사용하며, Termianl이나 Printer와 같은 저속의 장치에 주로 사용한다
+
+
+## 참고
+
+- [Direct Memory Access controller and I/O Processor](https://witscad.com/course/computer-architecture/chapter/dma-controller-and-io-processor#:~:text=The%20I%2FO%20devices%20are%20connected%20to%20the%20DMA,the%20CPU%20responding%20with%20DMA%20HOLD%20ACK%20signal.)
+- [DMA의 동작원리](https://gomsik.tistory.com/82)
