@@ -337,3 +337,8 @@ IOP는 I/O 작업의 DMA 개념을 확장한 것이다. IOP는 자체 메모리�
 사용자(개발자) 입장에서 봤을 때에는 프로세스와 스레드는 별개의 것이지만, 리눅스의 커널 입장에서 봤을 때 이 둘은 메모리를 공유한다는 점을 빼고 같은 COE(Context of Execution)이다. 따라서 커널 라이브러리 등에서는 프로세스와 스레드를 구분하지 않고 `task`라고 칭한다.
 
 리누스 토발즈에 의하면 스레드/프로세스 사고 방식을 중심으로 디자인하지 말고, COE 사고 방식을 중심으로 설계해야 한다고 당부한다.
+
+## 참고
+
+- [[Linux]리눅스 프로세스 관리](https://blog.naver.com/hj_kim97/223107014744)
+- [리눅스 - 프로세스(Process)와 쓰레드(Thread) & linux ps, 작업(job) handling](https://velog.io/@qlgks1/%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4%EC%99%80-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)
