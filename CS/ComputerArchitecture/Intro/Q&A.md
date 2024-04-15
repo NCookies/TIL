@@ -439,3 +439,9 @@ Windows에서는 어떤 프로세스들이 교착 상태에 빠졌더라도, 그
 그리고 일반적인 Windows 소프트웨어에서는 교착 상태가 매우 드물기 때문에 Windows가 정교한 전략으로 교착 상태를 처리하는 것은 "프로그램 중 하나가 자원을 포기하거나 사용자가 와서 작업을 종료할 때까지 두 스레드를 모두 교착 상태로 두는 것"보다 비생산적이다. 이런 경우에는 그냥 컴퓨터를 다시 시작한다. (블루스크린)
 
 즉, 프로그래머의 실수로 프로그램이 교착 상태에 빠지더라도, 운영체제는 이를 직접 해결하지 않고 최종 사용자에게 판단을 맡긴다. 
+
+## 참고
+
+- [How does Windows deal with deadlocks?](https://www.quora.com/How-does-Windows-deal-with-deadlocks)
+- [Which algorithm is used in Windows to come over a deadlock?](https://www.quora.com/unanswered/Which-algorithm-is-used-in-Windows-to-come-over-a-deadlock)
+- [Deadlock Detection - Windwos Drivers](https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/deadlock-detection)
