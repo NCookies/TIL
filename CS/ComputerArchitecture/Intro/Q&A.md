@@ -445,3 +445,25 @@ Windows에서는 어떤 프로세스들이 교착 상태에 빠졌더라도, 그
 - [How does Windows deal with deadlocks?](https://www.quora.com/How-does-Windows-deal-with-deadlocks)
 - [Which algorithm is used in Windows to come over a deadlock?](https://www.quora.com/unanswered/Which-algorithm-is-used-in-Windows-to-come-over-a-deadlock)
 - [Deadlock Detection - Windwos Drivers](https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/deadlock-detection)
+
+--- 
+
+> 출제일 : 2024/04/19 (DAY9)
+
+## 절대경로와 상대경로의 장단점과 쓰임새 (Ch15-1)
+
+### 절대경로
+
+- 파일이나 디렉토리의 위치를 정확하게 지정할 때 사용됨
+- 프로그램이나 스크립트가 여러 위치에서 실행될 수 있고, 절대경로를 사용하면 항상 정확한 위치를 참조할 수 있음
+- 프로젝트의 구동 서버나 환경이 변경되면 다시 설정해줘야 함
+- 프로젝트 디렉터리의 위치가 
+- Ex) 프로젝트 외부 정적 파일(이미지, 폰트 등) 또는 실행 프로그램
+
+### 상대경로
+
+- 프로젝트 내에서 파일이나 디렉터리의 위치를 참조할 때 편리함
+- 프로젝트 디렉터리가 다른 위치로 이동하더라도 파일이나 디렉터리의 위치를 변경하지 않고도 쉽게 참조할 수 있음
+- 배포나 서버 이전 등의 이유로 프로젝트 구동 환경이 변경되어도 다시 설정할 필요가 없음
+- 주로 프로젝트 관리와 유지보수를 간편하게 만들어 줌
+- Ex) .gitignore 관리, 프로젝트 내 설정 파일(config) 등
