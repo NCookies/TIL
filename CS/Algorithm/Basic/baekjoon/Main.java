@@ -31,17 +31,13 @@ public class Main {
                 }
             }
 
-            if (i == minIndex && i < (N - 1)) {
-                answer[arr[i] - 1] = 0;
-            } else {
-                answer[arr[i] - 1] += (minIndex - i);
-                answer[arr[minIndex] - 1] += (minIndex - i);
+            answer[arr[i] - 1] += (minIndex - i);
+            answer[arr[minIndex] - 1] += (minIndex - i);
 
-                // swap
-                int tmp = arr[i];
-                arr[i] = arr[minIndex];
-                arr[minIndex] = tmp;
-            }
+            // swap
+            int tmp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = tmp;
         }
 
         for (int k = 0; k < N; k++) {
