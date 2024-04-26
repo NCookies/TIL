@@ -10,7 +10,7 @@
 - `탐색(search) 문제` : 방대한 데이터에서 목적에 맞는 데이터를 찾아내기 위한 알고리즘
 - `이진 탐색(binary search)` : 데이터가 **정렬되어 있는 리스트**에서 특정한 값을 찾아내는 알고리즘
 
-[이진 탐색 파이썬 코드](./code/01_binary_search.py)
+[binary_search.py](./code/01_binary_search.py)
 ```python
 def binary_search(list, item):
     low = 0
