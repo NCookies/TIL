@@ -21,18 +21,17 @@ public class Main {
         }
 
         for (int i = 0; i < N; i++) {
-            int min = arr[i];
             int minIndex = i;
             
             for (int j = i; j < N; j++) {
-                if (arr[j] < min) {
-                    min = arr[j];
+                if (arr[j] < arr[minIndex]) {
                     minIndex = j;
                 }
             }
 
-            answer[arr[i] - 1] += (minIndex - i);
-            answer[arr[minIndex] - 1] += (minIndex - i);
+            int distance = minIndex - i;
+            answer[arr[i] - 1] += distance;
+            answer[arr[minIndex] - 1] += distance;
 
             // swap
             int tmp = arr[i];
