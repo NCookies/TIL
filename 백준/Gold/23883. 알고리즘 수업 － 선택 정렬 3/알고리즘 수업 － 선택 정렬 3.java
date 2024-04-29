@@ -42,13 +42,8 @@ public class Main {
                     return;
                 }
 
-                int tmp = idxMap.get(numArr[i]);
                 idxMap.put(numArr[i], maxIndex);
-                idxMap.put(maxValue, tmp);
-
-                tmp = numArr[maxIndex];
                 numArr[maxIndex] = numArr[i];
-                numArr[i] = tmp;
             }
 
             i--;
