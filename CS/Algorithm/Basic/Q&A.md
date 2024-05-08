@@ -145,3 +145,5 @@ for (int i = 1; i <= N; i++) {
 
 System.out.println(sb);
 ```
+
+# [DAY 2] 재귀
