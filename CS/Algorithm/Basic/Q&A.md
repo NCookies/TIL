@@ -1,12 +1,65 @@
 # [DAY 1] 선택정렬
 
-## 문제 및 관련 링크
+## [2750번] 수 정렬하기
+
+### 코드
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringBuilder sb = new StringBuilder();
+
+        int n = Integer.parseInt(br.readLine());
+        int[] arr = new int[n];
+
+        for (int i = 0 ; i < n; i++) {
+            arr[i] = Integer.parseInt(br.readLine());
+        }
+
+        // 선택 정렬
+        for (int i = 0; i < n; i++) {
+            int minIndex = i;
+            for (int j = i; j < n; j++) {
+                if (arr[j] < arr[minIndex]) {
+                    minIndex = j;
+                }
+            }
+
+            int tmp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = tmp;
+
+            sb.append(arr[i]).append("\n");
+        }
+
+        System.out.println(sb);
+    }
+}
+```
+
+### 풀이
+
+첫 번째 줄에서 n을 받고, n번만큼 루프를 돌며 입력 데이터를 읽어온다.
+
+이후 입력 데이터가 저장된 배열을 선택 정렬을 사용해 오름차순으로 정렬한다. 선택 정렬은 주어진 리스트에서 최소값을 찾고, 이를 맨 앞에 위치한 값을 교체하는 것을 반복하는 제자리 정렬 알고리즘 중 하나이다.
+
+이를 구현하기 위해 2중 for문을 사용했으며, 따라서 위 프로그램의 시간복잡도는 
+이다.
+
+## [28116번] 선택 정렬의 이동 거리
+
+### 문제 및 관련 링크
 
 - [문제 링크](https://www.acmicpc.net/problem/28116)
 - [코드 링크(Java) - 664ms](https://github.com/NCookies/TIL/blob/master/%EB%B0%B1%EC%A4%80/Silver/28116.%E2%80%85%EC%84%A0%ED%83%9D%E2%80%85%EC%A0%95%EB%A0%AC%EC%9D%98%E2%80%85%EC%9D%B4%EB%8F%99%E2%80%85%EA%B1%B0%EB%A6%AC/%EC%84%A0%ED%83%9D%E2%80%85%EC%A0%95%EB%A0%AC%EC%9D%98%E2%80%85%EC%9D%B4%EB%8F%99%E2%80%85%EA%B1%B0%EB%A6%AC.java)
 - [코드 링크(C) - 200ms](https://github.com/NCookies/TIL/blob/master/%EB%B0%B1%EC%A4%80/Silver/28116.%E2%80%85%EC%84%A0%ED%83%9D%E2%80%85%EC%A0%95%EB%A0%AC%EC%9D%98%E2%80%85%EC%9D%B4%EB%8F%99%E2%80%85%EA%B1%B0%EB%A6%AC/%EC%84%A0%ED%83%9D%E2%80%85%EC%A0%95%EB%A0%AC%EC%9D%98%E2%80%85%EC%9D%B4%EB%8F%99%E2%80%85%EA%B1%B0%EB%A6%AC.c)
 
-## 코드
+### 코드
 
 ```java
 import java.io.BufferedReader;
@@ -69,14 +122,14 @@ public class Main {
 }
 ```
 
-## 풀이
+### 풀이
 
 이 문제 풀이의 핵심은 다음과 같다.
 
 1. 수열 A에는 1부터 N까지의 정수가 중복되지 않고 한 번씩 등장한다.
 2. 따라서 선택 정렬의 과정에서 다음으로 와야할 최소값을 알 수 있다.
 
-### 입력
+**입력**
 
 위의 내용을 응용하여 문제를 풀기 위해서 두 개의 배열을 생성한다. 참고로 직관적으로 배열의 인덱스와 입력값을 매칭시키기 위해 배열 크기를 N + 1로 설정했다. (모든 배열의 0번방은 쓰지 않는다.)
 
@@ -108,7 +161,7 @@ for (int i = 1; i <= N; i++) {
 }
 ```
 
-### 정렬 및 루프
+**정렬 및 루프**
 
 **선택 정렬**은 루프를 돌면서 배열의 현재 인덱스에 정렬되지 않은 값들 중 최소값이 와야한다. 그리고 이 문제에서는 현재 인덱스와 최소값이 위치한 인덱스의 차이를 구해야 하는거고.
 
