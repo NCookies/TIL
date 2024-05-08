@@ -1,9 +1,9 @@
 arr = [1, 3, 5, 2, 4]
 
-def sum(list):
-    if list == []:
+def sum(array):
+    if array == []:
         return 0
     else:
-        return list[0] + sum(list[1:])
+        return array[0] + sum(array[1:])
     
 print(sum(arr))
