@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -14,7 +15,8 @@ public class Main {
         }
         
         // 정렬
-        quickSort(arr, 0, n - 1);
+        Arrays.sort(arr);
+//        quickSort(arr, 0, n - 1);
 
         // 명예 점수들을 오름차순으로 정렬했을 때 첫 번째 명예 점수는 반드시 1이어야 함
         long hackers = arr[0] - 1;
@@ -23,7 +25,7 @@ public class Main {
         /*
          * 한 번의 Defile 프로젝트 실행만으로 모든 국회의원을 없애려면
          * 명예 점수를 오름차순으로 정렬했을 때
-         * 이전 명예 점수와 같거나 1만큼만 커야 한다.
+         * 이전 명예 점수와 같거나 1만큼 커야 한다.
          */
         for (int i = 1; i < n; i++) {
             if (arr[i] - arr[i - 1] > 1) {
