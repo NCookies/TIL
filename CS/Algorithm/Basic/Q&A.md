@@ -446,12 +446,9 @@ public class Main {
 6. 이를 반복한다.
 7. 최종적으로 명예 점수는 1 2 3 4 5와 같은 형태가 된다. (arr : `[1, 2, 3, 4, 5]`, hackers = 7)
 
-현재 퀵 정렬을 공부 중이어서 
-
 ## [2751번] 수 정렬하기 2 (출제)
 
 ### 코드
-
 
 ```java
 import java.io.BufferedReader;
