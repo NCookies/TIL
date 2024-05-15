@@ -1,83 +1,88 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.StringTokenizer;
 
 public class Main {
+    static int[] arrA;
+    static int[] arrB;
 
-    static int[] B;
-    static int flag;
-    public static void main(String[] args) throws IOException{
-        // 입력 값 받기
+    static int eq;
+    static int flag = 0;
+
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int N = Integer.parseInt(br.readLine());
-        int[] A = new int[N];
-        B = new int[N];
-        flag = 0;
+
+        int n = Integer.parseInt(br.readLine());
+        arrA = new int[n];
+        arrB = new int[n];
 
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for(int i = 0; i < N; i++){
-            A[i] = Integer.parseInt(st.nextToken());
+        for (int i = 0; i < n; i++) {
+            arrA[i] = Integer.parseInt(st.nextToken());
         }
 
         st = new StringTokenizer(br.readLine());
-        for(int i = 0; i < N; i++){
-            B[i] = Integer.parseInt(st.nextToken());
+        for (int i = 0; i < n; i++) {
+            arrB[i] = Integer.parseInt(st.nextToken());
         }
 
-        compareArray(A);
-        quickSort(A, 0, N - 1);
+        if (compare() != -1) {
+            quickSort(arrA, 0, n - 1);
+        }
 
         System.out.println(flag);
     }
 
-    public static void quickSort(int[] A, int left, int right){
+    static void quickSort(int[] a, int lo, int hi) {
+        if (lo >= hi) return;
+        if (flag == 1) return;
 
-        if(left >= right) return;
-        if(flag == 1) return;
+        int pivot = partition(a, lo, hi);
 
-        int pivot = partition(A, left, right);
-
-        quickSort(A, left, pivot - 1);
-        quickSort(A, pivot + 1, right);
+        quickSort(a, lo, pivot - 1);
+        quickSort(a, pivot + 1, hi);
     }
 
-    public static int partition(int[] A, int left, int right){
-        int lo = left;
-        int hi = right;
-        int pivot = A[right];
+    static int partition(int[] a, int lo, int hi) {
+        int pivot = a[hi];
+        int i = lo - 1;
 
-        while(lo < hi){
-            // lo의 요소가 pivot보다 큰 값을 먼저 찾아야 됨
-            while(lo < hi && A[lo] < pivot){
-                lo++;
-            }
-
-            while(lo < hi && A[hi] >= pivot){
-                hi--;
-            }
-
-            swap(A, lo, hi);
-            compareArray(A); // 스왑해줄때마다 B배열과 비교
-        }
-        swap(A, hi, right);
-        compareArray(A);
-        return hi;
-    }
-
-    public static void swap(int[] A, int i, int j){
-        int temp = A[i];
-        A[i] = A[j];
-        A[j] = temp;
-    }
-
-    public static boolean compareArray(int[] A){
-        for(int i = 0; i < A.length; i++){
-            if(A[i] != B[i]){
-                return false;
+        for (int j = lo; j < hi; j++) {
+            if (a[j] <= pivot) {
+                swap(a, ++i, j);
             }
         }
+
+        if (i + 1 != hi) {
+            swap(a, i + 1, hi);
+        }
+
+        return i + 1;
+    }
+
+    static void swap(int[] a, int i, int j) {
+        int temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+
+        // 스왑한 데이터만을 비교
+        // 값을 스왑한 이후의 부분이 같다면 배열 B와 비교 작업 수행
+        if (eq == i || eq == j) {
+            eq = compare();
+        }
+    }
+
+    static int compare() {
+        for (int i = 0; i < arrA.length; i++) {
+            if (arrA[i] != arrB[i]) {
+                // 값이 다른 인덱스 반환
+                return i;
+            }
+        }
+
+        // 두 배열이 같은 경우
         flag = 1;
-        return true;
+        return -1;
     }
 }
