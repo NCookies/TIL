@@ -9,9 +9,12 @@ class Solution {
         Map<String, Map<Integer, Integer>> songPlayMap = new HashMap<>();
 
         for (int i = 0; i < genres.length; i++) {
+            // 장르별 재생수 카운트
             int oldScore = genrePlayCntMap.getOrDefault(genres[i], 0);
-            genrePlayCntMap.put(genres[i], oldScore + plays[i]);       // 장르별 재생수 카운트
+            genrePlayCntMap.put(genres[i], oldScore + plays[i]);
 
+            // 해당 장르의 첫 번째 곡이라면 빈 HashMap 데이터 새로 할당
+            // key: 인덱스, value: 해당 곡의 재생수를 가지는 Map 데이터 추가
             songPlayMap.computeIfAbsent(genres[i], k -> new HashMap<>()).put(i, plays[i]);
         }
 
@@ -20,7 +23,6 @@ class Solution {
         keySet.sort(((o1, o2) -> genrePlayCntMap.get(o2).compareTo(genrePlayCntMap.get(o1))));
 
         List<Integer> answerList = new ArrayList<>();
-        int[] answer = new int[keySet.size() * 2];
         int answerIndex = 0;
         for (String s : keySet) {
             // 인기 장르 순으로 추출
