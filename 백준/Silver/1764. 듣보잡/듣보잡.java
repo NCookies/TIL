@@ -21,14 +21,12 @@ public class Main {
         Arrays.sort(arr);
 
         // 정렬한 데이터 중 같은 문자열이 2개 이상이면 정답에 추가
-        String prev = arr[0];
         int cnt = 0;
         for (int i = 1; i < all; i++) {
-            if (prev.equals(arr[i])) {
+            if (arr[i].equals(arr[i - 1])) {
                 sb.append(arr[i]).append("\n");
                 cnt++;
             }
-            prev = arr[i];
         }
 
         System.out.println(cnt);
