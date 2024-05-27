@@ -1,19 +1,19 @@
 class Solution {
     static boolean[] visited;
-    static int cnt = 0;
+    static int answer = 0;
 
     public int solution(int k, int[][] dungeons) {
         visited = new boolean[dungeons.length];
         
         dfs(0, k, dungeons);
         
-        return cnt;
+        return answer;
     }
 
     // 모든 경우의 수 탐색
     static private void dfs(int depth, int fatigue, int[][] dungeons) {
         for (int i = 0; i < dungeons.length; i++) {
-            // 이미 방문했거나 최소 필요 피로도를 충족하지 못하면 루프 스킵
+            // 이미 방문했거나 최소 필요 피로도를 충족하지 못하면 패스
             if (visited[i] || fatigue < dungeons[i][0]) continue;
 
             // 방문 표시
@@ -25,6 +25,6 @@ class Solution {
             visited[i] = false;
         }
 
-        cnt = Math.max(cnt, depth);
+        answer = Math.max(answer, depth);
     }
 }
