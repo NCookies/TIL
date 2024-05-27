@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Boards</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .board {
+            border: 1px solid black;
+            margin: 0 10px;
+            padding: 10px;
+        }
+        .row {
+            display: flex;
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid black;
+        }
+        .empty {
+            background-color: white;
+        }
+        .filled {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board" id="game-board-1"></div>
+        <div class="board" id="game-board-2"></div>
+    </div>
+
+    <script>
+        // 두 개의 게임 보드 데이터
+        var gameBoard1 = [
+            [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0],
+            [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
+            [0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+            [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+            [0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0],
+            [1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],
+            [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        ];
+
+        var gameBoard2 = [
+            [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1],
+            [1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+            [1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0],
+            [1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1],
+            [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1],
+            [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1],
+            [1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1],
+            [1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+            [1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1]
+        ];
+
+        // 게임 보드를 표시할 함수
+        function displayGameBoard(boardData, containerId) {
+            var container = document.getElementById(containerId);
+
+            boardData.forEach(function(rowData) {
+                var row = document.createElement('div');
+                row.className = 'row';
+
+                rowData.forEach(function(cellData) {
+                    var cell = document.createElement('div');
+                    cell.className = 'cell ' + (cellData === 0 ? 'empty' : 'filled');
+                    row.appendChild(cell);
+                });
+
+                container.appendChild(row);
+            });
+        }
+
+        // 게임 보드 표시
+        displayGameBoard(gameBoard1, 'game-board-1');
+        displayGameBoard(gameBoard2, 'game-board-2');
+    </script>
+</body>
+</html>
