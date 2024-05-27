@@ -73,18 +73,20 @@ class Solution {
         return false;
     }
 
+
+    // 추출한 블럭 저장
+    static private List<List<Point>> blocks = new ArrayList<>();
+    static boolean[][] visited;
+
+    // 현재 위치 기준 상, 우, 하, 좌의 좌표
+    static int[] dx = {-1, 0, 1, 0};
+    static int[] dy = {0, 1, 0, -1};
+
+
     // 테이블에서 블럭 추출하기
     static private List<List<Point>> extractBlocks(int[][] table, int extractNum) {
-        // 추출한 블럭 저장
-        List<List<Point>> blocks = new ArrayList<>();
-
-        // 현재 위치 기준 상, 우, 하, 좌의 좌표
-        int[] dx = {-1, 0, 1, 0};
-        int[] dy = {0, 1, 0, -1};
-
-        // BFS 구현 시 사용
-        Queue<Point> queue = new LinkedList<>();
-        boolean[][] visited = new boolean[table.length][table[0].length];
+        blocks = new ArrayList<>();
+        visited = new boolean[table.length][table[0].length];
 
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[0].length; j++) {
@@ -93,41 +95,71 @@ class Solution {
                 if (visited[i][j] || table[i][j] != extractNum) {
                     continue;
                 }
-
-                // 추출한 하나의 블럭 저장
+                // DFS 구현
                 List<Point> block = new ArrayList<>();
-
-                queue.offer(new Point(i, j));
-                visited[i][j] = true;
-
-                // 블럭 추출
-                while (!queue.isEmpty()) {
-                    Point point = queue.poll();
-                    block.add(point);
-
-                    for (int dir = 0; dir < 4; dir++) {
-                        int nowX = point.x + dx[dir];
-                        int nowY = point.y + dy[dir];
-
-                        // 현재 위치 기준 상하좌우 좌표가 유효하면서 방문하지 않은 경우
-                        if (nowX >= 0 && nowX < table.length
-                                && nowY >= 0 && nowY < table[0].length
-                                && !visited[nowX][nowY]
-                                && table[nowX][nowY] == extractNum) {
-                            // 방문 여부 표시
-                            visited[nowX][nowY] = true;
-
-                            // 해당 좌표를 큐에 추가
-                            queue.offer(new Point(nowX, nowY));
-                        }
-                    }
-                }
-
+                dfs(table, i, j, extractNum, block);
                 blocks.add(block);
+                
+                // BFS 구현
+//                bfs(table, i, j, extractNum);
             }
         }
 
         return blocks;
+    }
+
+    private static void bfs(int[][] table, int i, int j, int extractNum) {
+        // BFS 구현 시 사용
+        Queue<Point> queue = new LinkedList<>();
+
+        // 추출한 하나의 블럭 저장
+        List<Point> block = new ArrayList<>();
+
+        queue.offer(new Point(i, j));
+        visited[i][j] = true;
+
+        // 블럭 추출
+        while (!queue.isEmpty()) {
+            Point point = queue.poll();
+            block.add(point);
+
+            for (int dir = 0; dir < 4; dir++) {
+                int nowX = point.x + dx[dir];
+                int nowY = point.y + dy[dir];
+
+                // 현재 위치 기준 상하좌우 좌표가 유효하면서 방문하지 않은 경우
+                if (nowX >= 0 && nowX < table.length
+                        && nowY >= 0 && nowY < table[0].length
+                        && !visited[nowX][nowY]
+                        && table[nowX][nowY] == extractNum) {
+                    // 방문 여부 표시
+                    visited[nowX][nowY] = true;
+
+                    // 해당 좌표를 큐에 추가
+                    queue.offer(new Point(nowX, nowY));
+                }
+            }
+        }
+
+        blocks.add(block);
+    }
+
+    private static void dfs(int[][] table, int i, int j, int extractNum, List<Point> block) {
+        block.add(new Point(i, j));
+        visited[i][j] = true;
+
+        for (int dir = 0; dir < 4; dir++) {
+            int nowX = i + dx[dir];
+            int nowY = j + dy[dir];
+
+            // 현재 위치 기준 상하좌우 좌표가 유효하면서 방문하지 않은 경우
+            if (nowX >= 0 && nowX < table.length
+                    && nowY >= 0 && nowY < table[0].length
+                    && !visited[nowX][nowY]
+                    && table[nowX][nowY] == extractNum) {
+                dfs(table, nowX, nowY, extractNum, block);
+            }
+        }
     }
 
     private static List<Point> normarlize(List<Point> block) {
