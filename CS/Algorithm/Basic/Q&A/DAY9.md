@@ -1,5 +1,50 @@
 # [DAY 9] 탐욕 알고리즘
 
+## [백준][1541번] 잃어버린 괄호
+
+https://www.acmicpc.net/problem/1541
+
+### 코드
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String s = br.readLine();
+
+        String[] split = s.split("-");
+
+        int answer = 0;
+
+        for (int i = 0; i < split.length; i++) {
+            String[] numbers = split[i].split("\\+");
+            int sum = 0;
+            for (String num : numbers) {
+                sum += Integer.parseInt(num);
+            }
+
+            if (i != 0) {
+                answer -= sum;
+            } else {
+                answer += sum;
+            }
+        }
+
+        System.out.println(answer);
+    }
+}
+```
+
+### 풀이
+
+식을 가장 작은 수로 만들기 위해서는 최대한 많은 수를 더하고 앞에 "-" 연산자를 붙여서 음수로 만들어야 한다. 이를 위해 "-"를 기준으로 식을 분리한다.
+
+"-"를 기준으로 나뉘어진 문자열들은 숫자와 "+"들로만 이루어져 있다. 이들의 합을 각각 구하고, 첫 번째 문자열을 제외하고는 뺄셈 연산을 수행한다. 입력의 첫 번째 문자로는 숫자만 올 수 있기 때문에 첫 번째 덩어리는 항상 양수이기 때문이다.
+
 ## [프로그래머스] 조이스틱 (풀이)
 
 https://school.programmers.co.kr/learn/courses/30/lessons/42860
