@@ -2,6 +2,8 @@
 
 ## [백준] 2629번 양팔저울 (출제)
 
+https://www.acmicpc.net/problem/2629
+
 ### 코드
 
 ```java
@@ -74,6 +76,8 @@ public class Main {
 구슬 입력으로 15,000보다 크게 들어오면 주어진 추로는 절대 무게를 잴 수 없기 때문에 항상 "N"이다.
 
 ## [프로그래머스] 등굣길 (풀이)
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42898
 
 ### 코드
 
