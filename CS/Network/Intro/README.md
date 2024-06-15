@@ -1,3 +1,8 @@
+## 교재
+
+**그림으로 이해하는 네트워크 구조와 기술**
+![Alt text](image-42.png)
+
 ## 네트워크 - 입문서 (2024.01.12 ~ 2024.03.01)
 
 - [[1장] 네트워크의 기본 개념](01_네트워크의_기본개념.md)
@@ -10,4 +15,4 @@
 
 ## 스터디
 
-[깃허브 링크](https://github.com/team-imad-study/study-question?tab=readme-ov-file#%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC---%EC%9E%85%EB%AC%B8%EC%84%9C-20240112--20240301)
+[깃허브 링크](https://github.com/team-imad-study/study-question/tree/main/Network/%EA%B7%B8%EB%A6%BC%EC%9C%BC%EB%A1%9C_%EC%9D%B4%ED%95%B4%ED%95%98%EB%8A%94_%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC_%EA%B5%AC%EC%A1%B0%EC%99%80_%EA%B8%B0%EC%88%A0)
