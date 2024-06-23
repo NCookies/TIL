@@ -4,6 +4,8 @@
 
 ## [프로그래머스] 아이템 줍기 (출제)
 
+https://school.programmers.co.kr/learn/courses/30/lessons/87694
+
 ### 코드
 
 ```java
@@ -110,6 +112,8 @@ class Solution {
 이를 해결하기 위해 격자의 한 칸 길이를 1이 아니라 0.5라고 생각한다. 즉, 모든 좌표 단위에 2배를 해줘서 계산하면 이 예외 케이스를 해결할 수 있다.
 
 ## [프로그래머스] 호텔 방 배정 (풀이)
+
+https://school.programmers.co.kr/learn/courses/30/lessons/64063
 
 ### 코드
 
